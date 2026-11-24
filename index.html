@@ -676,6 +676,7 @@ const S={step:0,format:"a3",support:"alu",cadreCol:"Noir",ml:false,nb:false,view
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const AR=()=>FORMATS[S.format].ar;
+const soloOpp=it=>(S.sexe==="F"&&it.p==="H")||(S.sexe==="H"&&it.p==="F");
 function crossSex(it){/* homme seul (pour une femme) ou femme seule (pour un homme), toutes couleurs, adultes */
   if(!it||!it.a&&false)return false;if(S.age==="ado"||it.a==="ado")return false;
   if(it.d==="sport")return false;
@@ -685,9 +686,9 @@ function crossSex(it){/* homme seul (pour une femme) ou femme seule (pour un hom
 /* Dossier Femmes (profil homme) */
 const WAGE=[["","20-35 ans"],["35","35-45 ans"],["45","45-55 ans"]],WTEINT=[["noire","Noire"],["metisse","Métisse"],["claire","Claire"]];
 function womenFolderH(th){const v=S.womenView;const DORD=["love","beaute","mode","selflove","healthy","sport","famille","maternite","argent","voiture","nouvelles","business","succes","confiance","voyage","maison","terre","foi","etudes","cozy","brunch","celebration","creativite","amitie"];
-  const L=DATA.filter(it=>it.t==="femme"&&it.p==="F"&&(it.a||"")===v.a&&it.c===v.c);
+  const W=S.sexe==="H";const L=DATA.filter(it=>it.t===(W?"femme":"homme")&&it.p===(W?"F":"H")&&(it.a||"")===v.a&&it.c===v.c);
   const doms=[...new Set(L.map(i=>i.d))].sort((a,b)=>DORD.indexOf(a)-DORD.indexOf(b));
-  return `<div class="wfhead"><button class="btn small ghost" id="wback">‹ Retour</button><strong>Dossier Femmes</strong></div>
+  return `<div class="wfhead"><button class="btn small ghost" id="wback">‹ Retour</button><strong>Dossier ${W?"Femmes":"Hommes"}</strong></div>
   <div class="opts wfopts">${WAGE.map(([k,l])=>`<button class="opt wfa" data-a="${k}" aria-pressed="${v.a===k}">📁 ${l}</button>`).join("")}</div>
   <div class="opts wfopts">${WTEINT.map(([k,l])=>`<button class="opt wft" data-c="${k}" aria-pressed="${v.c===k}">${l}</button>`).join("")}</div>
   ${L.length?doms.map(d=>{const M=L.filter(i=>i.d===d);return `<div class="bsec"><div class="bhead">${DOMS[d]||d} <small>${M.length}</small></div><div class="bank">${M.map(th).join("")}</div></div>`}).join(""):`<p class="lead" style="font-size:13px">Pas encore de photos pour cette tranche d'âge et cette couleur de peau.</p>`}`}
@@ -704,7 +705,7 @@ function setPz(e,pz,anim){pz=Math.max(.3,Math.min(3,pz));const B=document.getEle
   const pv=document.getElementById("pzV");if(pv)pv.textContent=Math.round(e.pz*100)+" %";const pr=document.getElementById("pzR");if(pr)pr.value=Math.round(e.pz*100)}
 function fits(it){
   if(!it)return false;
-  if(crossSex(it))return true;
+  if(crossSex(it)&&!soloOpp(it))return true;
   if(S.sexe==="F"){if(!["F","FH","T"].includes(it.p))return false}else{if(!["H","FH","T"].includes(it.p))return false}
   if(it.a==="ado"&&S.age!=="ado")return false;
   if(S.age==="ado"&&it.a!=="ado"&&it.t!=="commune")return false;
@@ -726,7 +727,7 @@ const bank=()=>{if(S.ageView&&S.ageView!==S.age&&AGEV[S.ageView])return hairSort
 const TRANSP="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 const ZI=Object.fromEntries(DATA.map(i=>[i.f,i.z]));const BLOB=new Map();const PK={};
 function loadPack(n){if(!PK[n])PK[n]=fetch(`q/${String(n).padStart(2,"0")}.jpg`).then(r=>{if(!r.ok)throw 0;return r.arrayBuffer()}).then(buf=>{DATA.forEach(i=>{if(i.z&&i.z[0]===n&&!BLOB.has(i.f))BLOB.set(i.f,URL.createObjectURL(new Blob([new Uint8Array(buf,i.z[1],i.z[2])],{type:"image/jpeg"})))});hydrate(document)}).catch(()=>{delete PK[n]});return PK[n]}
-const imgSrc=f=>!f?"":f.startsWith("data:")?f:f.startsWith("u:")?"":(BLOB.get(f)||TRANSP);
+const imgSrc=f=>!f?"":f.startsWith("data:")?f:f.startsWith("u:")?"":f.startsWith("h:")?hdThumb(f.slice(2),600):f.startsWith("http")?f:(BLOB.get(f)||TRANSP);
 const IO="IntersectionObserver" in window?new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){IO.unobserve(en.target);const z=ZI[en.target.dataset.f];if(z)loadPack(z[0])}}),{rootMargin:"300px"}):null;
 const RO="ResizeObserver" in window?new ResizeObserver(es=>es.forEach(en=>fitK(en.target))):null;
 function fitK(b){const w=b.offsetWidth;if(w)b.style.setProperty("--k",w/1000)}
@@ -953,7 +954,7 @@ function renderBoardArea(animate){
     n.animate([{translate:`${o.left-nr.left}px ${o.top-nr.top}px`},{translate:"0 0"}],{duration:650,easing:"cubic-bezier(.2,.8,.2,1)"})});
   applyView();fitWS(b);renderSelbar();renderToolbar();scheduleSave();
 }
-function renderToolbar(){const u=document.getElementById("undoBtn");if(u)u.disabled=!S.hist.length;const rd=document.getElementById("redoBtn");if(rd)rd.disabled=!(S.fut&&S.fut.length);const st=document.getElementById("savest");if(st){st.textContent=S.saveState;st.className="savest"+(S.saveState.startsWith("Enregistré")?" ok":"")}}
+function renderToolbar(){const u=document.getElementById("undoBtn");if(u)u.disabled=!S.hist.length;const rd=document.getElementById("redoBtn");if(rd)rd.disabled=!(S.fut&&S.fut.length);const kb=document.getElementById("keepBtn");if(kb)kb.hidden=!!S.keep;const st=document.getElementById("savest");if(st){st.textContent=S.keep?S.saveState:"Pas encore enregistré";st.className="savest"+(S.saveState.startsWith("Enregistré")?" ok":"")}}
 window.addEventListener("error",e=>{if(S&&S.brush){const n=document.getElementById("spN");if(n)n.textContent="(err "+(e.message||"")+")"}});
 function renderSelbar(){const bar=document.getElementById("selbar");if(!bar)return;if(S.brush){bar.innerHTML=`<button class="btn small" id="brOff">✓ Arrêter le pinceau</button><button class="btn small ghost" id="spUndo">↶</button><span class="hint">✨ Glisse sur le tableau <b id="spN" style="opacity:.6;font-weight:500">(${S.sparks.length})</b></span>${spOpts("mini")}`;bindSpOpts(bar);bar.querySelector("#brOff").onclick=()=>{S.brush=false;document.body.classList.remove("brushOn");S.sheetMin=false;renderTools();renderBoardArea()};bar.querySelector("#spUndo").onclick=undo;return}if(S.zoom>1.01&&!S.sel&&!S.notice){bar.innerHTML=`<span class="hint">${S.pan?"Glisse pour te déplacer. Retouche le bouton ✋ pour modifier.":"Glisse le tableau pour te déplacer · touche une photo (sans glisser) pour la modifier · « Voir tout » pour revenir."}</span>`;return}const e=S.els.find(x=>x.id===S.sel);
   if(S.fmtUndo&&!e){bar.innerHTML=`<span class="hint">Le tableau a été réorganisé pour ce format.</span><button class="btn small ghost" id="keepl">Garder plutôt ma disposition d'avant</button>`;bar.querySelector("#keepl").onclick=keepLayout;return}
@@ -1393,7 +1394,7 @@ function renderTools(){
     <p class="lead bhint" style="font-size:12px">${nslot?"Touche une image pour remplir la prochaine case vide. Pour la mettre dans une case précise : reste appuyée dessus puis glisse-la.":"Touche une image pour l'ajouter. Pour la placer toi-même : reste appuyée dessus puis glisse-la sur le tableau."}</p>
     <input type="file" id="up" accept="image/*" multiple hidden>
 
-    ${S.womenView&&S.sexe==="H"?womenFolderH(th):mineH+secs+(S.sexe==="H"&&!hits&&S.age!=="ado"?`<button class="wfold" id="wfold"><span class="wfi">📁</span><span><strong>Dossier Femmes</strong><small>Pour manifester ta femme idéale : par âge et couleur de peau</small></span><span aria-hidden="true">›</span></button>`:"")}`;
+    ${S.womenView?womenFolderH(th):(!hits&&S.age!=="ado"?`<button class="wfold" id="wfold"><span class="wfi">📁</span><span><strong>Dossier ${S.sexe==="H"?"Femmes":"Hommes"}</strong><small>Pour manifester ${S.sexe==="H"?"ta femme idéale":"ton homme idéal"} : par âge et couleur de peau</small></span><span aria-hidden="true">›</span></button>`:"")+mineH+secs}`;
     fixedH=`<div class="srch"><input type="text" id="q" placeholder="Rechercher : femme méditation, plage, bébé…" value="${esc(S.q||"")}" autocomplete="off" enterkeyhint="search">${S.q?`<button class="btn small ghost" id="qx" aria-label="Effacer la recherche">✕</button>`:""}</div><div class="agefold"><span>Âges :</span><button class="afold" data-av="" aria-pressed="${!S.ageView||S.ageView===S.age}">📁 Mon âge</button>${Object.entries(AGEV).filter(([k])=>k!==S.age).map(([k,v])=>`<button class="afold" data-av="${k}" aria-pressed="${S.ageView===k}">📁 ${v[0]}</button>`).join("")}</div><div class="chips"><button class="chip" data-f="all" aria-pressed="${S.filter==="all"}">Tout</button>${doms.map(d=>`<button class="chip" data-f="${d}" aria-pressed="${S.filter===d}">${DOMS[d]||d}</button>`).join("")}</div>`;
   } else if(S.tab==="modeles"){
     h+=`${isSmall()?`<p class="lead" style="font-size:12px;color:var(--gold2)">Petit format : chaque modèle a 6 images maximum, pour que tes photos et tes écritures restent bien lisibles.</p>`:""}<p class="lead" style="font-size:12px">Des modèles calculés pour ton format (${esc(FORMATS[S.format].n)}). Tes photos restent, elles changent juste de place.</p><div class="models">${MODELS.filter(m=>!(isSmall()&&m.id==="vedette")).map(m=>`<button class="model" data-m="${m.id}" aria-pressed="${S.model===m.id}"><div class="mwrap">${miniModel(m)}</div><strong>${m.n}</strong></button>`).join("")}</div>
@@ -1483,7 +1484,7 @@ async function fbLoad0(){const v="10.14.1",b=`https://www.gstatic.com/firebasejs
 function cldUpload(file,pid){if(!HOSTED||!CLD.cloud)return;const fd=new FormData();fd.append("file",file);fd.append("upload_preset",CLD.preset);if(CLD.folder)fd.append("folder",CLD.folder);
   HDP[pid]=fetch(`https://api.cloudinary.com/v1_1/${CLD.cloud}/image/upload`,{method:"POST",body:fd}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.secure_url){HD[pid]=j.secure_url;return j.secure_url}return null}).catch(()=>null)}
 const hdThumb=(u,w)=>u.replace("/upload/",`/upload/c_limit,w_${w},q_auto,f_jpg/`);
-async function fbAfterLogin(user){FBUSER=user;DB=FB.db;USERID=user.uid;ISADMIN=user.email===ADMIN_EMAIL&&user.emailVerified;if(ISADMIN)OWNER=true;
+async function fbAfterLogin(user){FBUSER=user;DB=FB.db;USERID=user.uid;ISADMIN=user.email===ADMIN_EMAIL&&user.emailVerified;if(ISADMIN){OWNER=true;loadTpls().then(()=>{if(S.page==="boards"||S.page==="galerie")render()})}
   const local=lsGet("boards")||[];
   try{const mine=await store.list();const have=new Set(mine.map(b=>b.id));
     for(const b of local){if(have.has(b.id))continue;for(const e of (b.els||[])){if(e.src&&e.src.startsWith("u:")){const pid=e.src.slice(2);const d=lsGet(pid);if(d)await store.putPhoto(pid,d)}}await store.save(b)}
@@ -1545,8 +1546,8 @@ const store={
 const PIDS=new Map();const SAVEDP=new Set();
 function pidOf(data){if(!PIDS.has(data)){let h=0;for(let i=0;i<data.length;i+=97)h=(h*31+data.charCodeAt(i))|0;PIDS.set(data,"p"+(h>>>0).toString(36)+data.length.toString(36))}return PIDS.get(data)}
 let saveTimer=null,lastSaved="",saving=false;
-function scheduleSave(){if(!S.boardId)return;clearTimeout(saveTimer);saveTimer=setTimeout(doSave,1800)}
-async function doSave(){if(!S.boardId||saving)return;
+function scheduleSave(){if(!S.boardId||!S.keep)return;clearTimeout(saveTimer);saveTimer=setTimeout(doSave,1800)}
+async function doSave(){if(!S.boardId||!S.keep||saving)return;
   const els=S.els.map(e=>e.src&&e.src.startsWith("data:")?{...e,src:"u:"+pidOf(e.src)}:e);
   const rec={kind:"board",name:S.name||"Mon tableau",updatedAt:Date.now(),format:S.format,support:S.support,cadreCol:S.cadreCol,ml:S.ml,nb:S.nb,model:S.model,bg:S.bg,els,sparks:S.sparks,spg:S.spg,hair:S.hair,sexe:S.sexe,teint:S.teint,age:S.age};
   const key=JSON.stringify({...rec,updatedAt:0});if(key===lastSaved)return;
@@ -1556,13 +1557,34 @@ async function doSave(){if(!S.boardId||saving)return;
     const i=S.saved.findIndex(x=>x.id===S.boardId);const row={id:S.boardId,...rec};if(i>=0)S.saved[i]=row;else S.saved.unshift(row);
   }catch(err){S.saveState=DB?"Pas enregistré : réessaie dans un instant":"Pas enregistré sur cet appareil"}
   saving=false;renderToolbar()}
+function keepBoard(){if(!S.boardId)S.boardId=newBoardId();S.keep=true;lastSaved="";renderToolbar();doSave()}
+function toggleWm(){if(!OWNER)return;const on=document.body.classList.toggle("nowm");const l=document.querySelector("#wmBtn .lbl");if(l)l.textContent=on?" Avec filigrane":" Sans filigrane"}
+let TPL=null,TPLERR=false;const TPLIDS=new Set();
+async function loadTpls(){if(!HOSTED){TPL=[];return}try{await fbLoad();const q=await FB.db.collection("templates").get();TPL=q.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.publishedAt||0)-(a.publishedAt||0));TPLIDS.clear();TPL.forEach(t=>TPLIDS.add(t.id));TPLERR=false}catch(e){console.error("tpl",e);TPLERR=true;if(!TPL)TPL=[]}}
+async function publishTpl(id,btn){const b=S.saved.find(x=>x.id===id);if(!b||!ISADMIN)return;if(btn){btn.disabled=true;btn.textContent="⏳…"}
+  try{if(TPLIDS.has(id)){await FB.db.collection("templates").doc(id).delete();TPLIDS.delete(id);if(TPL)TPL=TPL.filter(t=>t.id!==id)}
+  else{const els=JSON.parse(JSON.stringify(b.els||[]));let small=0;
+    for(const e of els){if(e.src&&e.src.startsWith("u:")){const pid=e.src.slice(2);let d=null;try{d=await store.getPhoto(pid)}catch(x){}
+      if(HD[pid])e.src="h:"+HD[pid];else if(d&&small+d.length<600000){e.src=d;small+=d.length}else{e.type="slot";delete e.src}}}
+    const t={...b,els,id,publishedAt:Date.now()};delete t.kind;await FB.db.collection("templates").doc(id).set(clean(t));TPLIDS.add(id);if(TPL)TPL=[t,...TPL.filter(x=>x.id!==id)]}
+  }catch(e){console.error("pub",e);if(btn){btn.textContent="Erreur, réessaie";btn.disabled=false}return}render()}
+async function toDataURL(u){const r=await fetch(u);if(!r.ok)throw new Error(r.status);const bl=await r.blob();return await new Promise((ok,ko)=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=ko;f.readAsDataURL(bl)})}
+async function useTpl(id,btn){const t=(TPL||[]).find(x=>x.id===id);if(!t)return;if(btn){btn.disabled=true;btn.textContent="⏳ Ouverture…"}
+  const els=JSON.parse(JSON.stringify(t.els||[]));
+  await Promise.all(els.map(async e=>{if(e.src&&e.src.startsWith("h:")){const hd=e.src.slice(2);try{const d=await toDataURL(hdThumb(hd,1400));HD[pidOf(d)]=hd;e.src=d}catch(x){e.type="slot";delete e.src}}}));
+  await openBoard({...t,els,id:newBoardId(),name:t.name||"Mon tableau"});S.keep=false;S.saveState="";S.page=null;renderToolbar()}
+function galerieHTML(){const L=TPL;let body;
+  if(L===null)body=`<p class="lead">Chargement des modèles…</p>`;
+  else if(!L.length)body=`<p class="lead">${TPLERR?"Les modèles n'ont pas pu se charger. Vérifie ta connexion et réessaie.":"Les premiers modèles arrivent très bientôt ✨"}</p>`;
+  else body=`<div class="saved">${L.map(b=>`<div class="sv"><div class="pv">${boardHTML(b,false)}</div><strong>${esc(b.name||"Modèle")}</strong><small>${esc(FORMATS[fmtKey(b.format)].n)}</small><div class="row"><button class="btn small" data-usetpl="${b.id}">Utiliser ce modèle</button>${ISADMIN?`<button class="btn small ghost" data-pub="${b.id}" data-from="g">Retirer</button>`:""}</div></div>`).join("")}</div>`;
+  return `<section class="card"><h2>Modèles à personnaliser</h2><p class="lead">Choisis un modèle déjà composé, puis change les images, les textes ou la taille comme tu veux. Le modèle d'origine ne bouge pas : tu travailles sur ta copie.</p>${body}<div class="nav"><span></span><button class="btn ghost" data-page="new">Partir d'un tableau vierge</button></div></section>`}
 async function openBoard(b){
   const els=JSON.parse(JSON.stringify(b.els||[]));
   for(const e of els){if(e.src&&e.src.startsWith("u:")){const pid=e.src.slice(2);const d=await store.getPhoto(pid);if(d){PIDS.set(d,pid);SAVEDP.add(pid);e.src=d;if(!S.mine.includes(d))S.mine.push(d)}else{e.type="slot";delete e.src}}}
   els.forEach(e=>e.id=uid++);
-  Object.assign(S,{boardId:b.id,name:b.name,format:fmtKey(b.format),support:b.support||S.support,cadreCol:b.cadreCol||S.cadreCol,ml:!!b.ml,nb:!!b.nb,model:b.model,bg:b.bg,els,sparks:JSON.parse(JSON.stringify(b.sparks||[])),spg:{s:(b.spg&&b.spg.s)??1,o:(b.spg&&b.spg.o)??1},hair:b.hair==="n"?"c":(b.hair||""),sexe:b.sexe||S.sexe,teint:b.teint||S.teint,age:b.age||S.age||"2035",hist:[],sel:null,fmtUndo:null});
+  Object.assign(S,{boardId:b.id,name:b.name,format:fmtKey(b.format),support:b.support||S.support,cadreCol:b.cadreCol||S.cadreCol,ml:!!b.ml,nb:!!b.nb,model:b.model,bg:b.bg,els,sparks:JSON.parse(JSON.stringify(b.sparks||[])),spg:{s:(b.spg&&b.spg.s)??1,o:(b.spg&&b.spg.o)??1},hair:b.hair==="n"?"c":(b.hair||""),sexe:b.sexe||S.sexe,teint:b.teint||S.teint,age:b.age||S.age||"2035",hist:[],sel:null,fmtUndo:null,keep:true});
   ensureSup();lastSaved=JSON.stringify({kind:"board",name:b.name,updatedAt:0,format:b.format,model:b.model,bg:b.bg,els:b.els,sparks:b.sparks||[],sexe:b.sexe,teint:b.teint});S.saveState="Enregistré ✓";go(1)}
-function newBoard(){const d=new Date();Object.assign(S,{boardId:newBoardId(),name:"Mon tableau du "+d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}),els:[],sparks:[],hist:[],sel:null,fmtUndo:null,saveState:"",cleared:false});lastSaved="";S.tab="modeles";applyModel(S.model,false);go(1)}
+function newBoard(){const d=new Date();Object.assign(S,{boardId:newBoardId(),name:"Mon tableau du "+d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}),els:[],sparks:[],hist:[],sel:null,fmtUndo:null,saveState:"",cleared:false,keep:false});lastSaved="";S.tab="modeles";applyModel(S.model,false);go(1)}
 let OWNER=/[?&]dl=1/.test(location.search);
 let H2I=null;
 async function exportBoard(btn){if(S.exporting)return;S.exporting=true;const old=btn?btn.innerHTML:"";if(btn){btn.disabled=true;btn.innerHTML="⏳ Préparation…"}
@@ -1588,7 +1610,7 @@ async function exportBoard(btn){if(S.exporting)return;S.exporting=true;const old
   finally{if(host)host.remove();S.exporting=false;if(btn){btn.disabled=false;btn.innerHTML=old}renderSelbar&&renderSelbar()}}
 async function initStore(){
   if(HOSTED){acctBar();try{S.saved=lsGet("boards")||[];S.orders=lsGet("orders")||[]}catch(e){}if(S.step===0)render();
-    try{await fbLoad();FB.auth.getRedirectResult().catch(()=>{});FB.auth.onAuthStateChanged(u=>{if(u)fbAfterLogin(u);else{FBUSER=null;acctBar()}})}catch(e){console.error("firebase",e)}return}
+    try{await fbLoad();FB.auth.getRedirectResult().catch(()=>{});FB.auth.onAuthStateChanged(u=>{if(u)fbAfterLogin(u);else{FBUSER=null;if(ISADMIN){ISADMIN=false;OWNER=/[?&]dl=1/.test(location.search);document.body.classList.remove("nowm")}acctBar()}})}catch(e){console.error("firebase",e)}return}
   try{const c=window.claude;if(c&&c.use){const [d,u]=await Promise.all([c.use("db"),c.use("user")]);if(u){try{OWNER=!!(await u.isOwner())}catch(e){}}if(d&&u){const id=await u.id();if(id){DB=d;USERID=id}}}}catch(e){}
   if(OWNER&&S.step>=1)render();
   acctBar();
@@ -1643,9 +1665,9 @@ function renderSteps(){document.getElementById("steps").innerHTML=STEPS.map((s,i
 function go(n){if(S.tourI!=null)endTour();S.page=null;S.step=n;document.body.classList.toggle("studioOn",n===1);S.brush=false;document.body.classList.remove("brushOn");render();window.scrollTo({top:0})}
 const opt=(k,v,l,x="")=>`<button class="opt" data-k="${k}" data-v="${v}" aria-pressed="${S[k]===v}" ${x}>${l}</button>`;
 const fmtIcon=ar=>{const w=40*Math.sqrt(ar),h=40/Math.sqrt(ar);const k=Math.min(1,46/w,46/h);return`<span class="ic"><i style="width:${w*k}px;height:${h*k}px"></i></span>`};
-function openPage(p){if(S.tourI!=null)endTour();document.getElementById("layer").innerHTML="";closeMenu();if(p==="atelier"){if(S.boardId){go(1)}else{newBoard()}return}if(p==="new"){newBoard();return}S.page=p;document.body.classList.remove("studioOn");render();window.scrollTo({top:0})}
+function openPage(p){if(S.tourI!=null)endTour();document.getElementById("layer").innerHTML="";closeMenu();if(p==="atelier"){if(S.boardId){go(1)}else{newBoard()}return}if(p==="new"){newBoard();return}if(p==="galerie"&&TPL===null)loadTpls().then(()=>{if(S.page==="galerie")render()});S.page=p;document.body.classList.remove("studioOn");render();window.scrollTo({top:0})}
 function closeMenu(){const m=document.getElementById("menuOv");if(m)m.remove()}
-function openMenu(){closeMenu();const items=[["atelier","Mon atelier","Continuer mon tableau dans le studio"],["boards","Mes tableaux",S.saved.length+" tableau"+(S.saved.length>1?"x":"")],["orders","Mes commandes",(S.orders||[]).length?(S.orders.length+" commande"+(S.orders.length>1?"s":"")):"Aucune pour l'instant"],["profil","Mon profil","Toi, ton teint, ton âge, tes coordonnées"],["new","Nouveau tableau","Commencer un tableau vierge"],...(ISADMIN?[["admin","Commandes clientes","Espace administratrice"]]:[])];
+function openMenu(){closeMenu();const items=[["atelier","Mon atelier","Continuer mon tableau dans le studio"],["boards","Mes tableaux",S.saved.length+" tableau"+(S.saved.length>1?"x":"")],["orders","Mes commandes",(S.orders||[]).length?(S.orders.length+" commande"+(S.orders.length>1?"s":"")):"Aucune pour l'instant"],["profil","Mon profil","Toi, ton teint, ton âge, tes coordonnées"],["galerie","Modèles","Des tableaux déjà composés à personnaliser"],["new","Nouveau tableau","Commencer un tableau vierge"],...(ISADMIN?[["admin","Commandes clientes","Espace administratrice"]]:[])];
   const infos=[["idees","Boîte à idées ✨"],["aide","Aide"],["livraison","Livraison"],["paiement","Paiement"],["faq","Questions fréquentes"],["apropos","À propos"],["contact","Contact"]];
   const d=document.createElement("div");d.id="menuOv";d.className="menuOv";d.innerHTML=`<nav class="menuP" aria-label="Menu"><div class="menuH"><strong>visionboard-ci.com</strong><button class="btn small ghost" id="menuX" aria-label="Fermer le menu">✕</button></div><span class="glabel">Mon espace</span>${items.map(([k,t,sub])=>`<button class="menuI${S.page===k?" on":""}" data-mp="${k}"><strong>${t}</strong><small>${esc(sub)}</small></button>`).join("")}<span class="glabel" style="margin-top:8px">Infos</span><div class="menuL">${infos.map(([k,t])=>`<button class="menuS${S.page===k?" on":""}" data-mp="${k}">${t}</button>`).join("")}</div>${waCard()}</nav>`;
   document.body.appendChild(d);d.onclick=e=>{if(e.target===d)closeMenu()};d.querySelector("#menuX").onclick=closeMenu;d.querySelectorAll("[data-mp]").forEach(b=>b.onclick=()=>openPage(b.dataset.mp));const f=d.querySelector(".menuI");if(f)f.focus()}
@@ -1653,6 +1675,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMenu()});
 function saveProfile(){lsSet("profile",{sexe:S.sexe,teint:S.teint,hair:S.hair,age:S.age,nom:S.nom,tel:S.tel,ville:S.ville})}
 function pageHTML(){
   if(S.page==="admin")return adminHTML();
+  if(S.page==="galerie")return galerieHTML();
   if(S.page==="boards")return `<section class="card">${savedHTML()||`<h2>Mes tableaux</h2><p class="lead">Tu n'as pas encore de tableau. Crée le premier !</p>`}<div class="nav"><span></span><button class="btn" data-page="new">Créer un nouveau tableau ✦</button></div></section>`;
   if(S.page==="orders"){const L=S.orders||[];return `<section class="card"><h2>Mes commandes</h2>${L.length?`<p class="lead">Tes commandes préparées sur ${DB?"ton compte":"cet appareil"}. Si tu ne l'as pas encore fait, envoie-la sur WhatsApp pour la confirmer.</p><div class="orders">${L.map(o=>`<div class="ord"><div class="ordh"><strong>${esc(o.name||"Mon tableau")}</strong><small>${new Date(o.at).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"})}</small></div><span>${esc(o.offer||"")}</span>${o.price?`<b>${fcfa(o.price)}${o.digital?"":" + livraison"}</b>`:""}<div class="row"><a class="btn small" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent(o.text||"")}">Envoyer sur WhatsApp</a>${S.saved.find(b=>b.id===o.boardId)?`<button class="btn small ghost" data-open="${o.boardId}">Voir le tableau</button>`:""}</div></div>`).join("")}</div>`:`<p class="lead">Tu n'as pas encore de commande. Quand ton tableau est prêt, clique sur « Illuminer mon année » à l'étape Finition.</p>`}</section>`}
   if(S.page==="profil")return `<section class="card"><h2>Mon profil</h2><p class="lead">Les photos avec personnage vont te ressembler. Tes coordonnées sont reprises dans tes commandes.</p>
@@ -1682,7 +1705,7 @@ async function sendIdea(f,V){const ok=V.querySelector("#ideeOk"),er=V.querySelec
   try{await fbLoad();await FB.db.collection("ideas").add({idee,email,at:Date.now(),uid:FBUSER?FBUSER.uid:null});f.reset();ok.hidden=false}catch(e){console.error("idea",e);er.hidden=false}}
 function bindPage(V){if(S.page==="admin"){V.querySelectorAll("[data-af]").forEach(b=>b.onclick=()=>{ADM.filter=b.dataset.af;render()});V.querySelectorAll("[data-st]").forEach(sel=>sel.onchange=async()=>{const o=ADM.list.find(x=>x.id===sel.dataset.st);try{await FB.db.collection("orders").doc(o.id).update({status:sel.value});o.status=sel.value}catch(e){sel.style.outline="2px solid #B0386A";console.error(e)}});V.querySelectorAll("[data-aopen]").forEach(b=>b.onclick=()=>adminOpen(b.dataset.aopen))}const f=V.querySelector("#ideaF");if(f)f.onsubmit=e=>{e.preventDefault();sendIdea(f,V)};if(S.page==="profil"){[["pnom","nom"],["ptel","tel"],["pville","ville"]].forEach(([id,k])=>{const el=V.querySelector("#"+id);if(el)el.oninput=()=>{S[k]=el.value;saveProfile();const o=V.querySelector("#psaved");if(o)o.hidden=false}});V.querySelectorAll(".opt[data-k]").forEach(b=>b.addEventListener("click",saveProfile))}}
 function savedHTML(){if(!S.saved.length)return"";
-  return `<h2>Mes tableaux</h2><p class="lead">${DB?"Gardés dans ton compte : retrouve-les sur n'importe quel appareil.":"Gardés sur cet appareil."} Rouvre-en un pour le modifier, même son format.</p><div class="saved">${S.saved.map(b=>`<div class="sv ${b.id===S.boardId?"cur":""}"><div class="pv">${boardHTML(b,false)}</div><strong>${esc(b.name||"Mon tableau")}</strong><small>${esc(FORMATS[fmtKey(b.format)].n)}${b.support&&SUPPORTS[b.support]?" · "+SUPPORTS[b.support].n:""} · ${new Date(b.updatedAt).toLocaleDateString("fr-FR")}</small><div class="row"><button class="btn small" data-open="${b.id}">Ouvrir</button><button class="btn small ghost" data-copy="${b.id}">Copier</button><button class="btn small ghost" data-del="${b.id}" aria-label="Supprimer">✕</button></div></div>`).join("")}</div>`}
+  return `<h2>Mes tableaux</h2><p class="lead">${DB?"Gardés dans ton compte : retrouve-les sur n'importe quel appareil.":"Gardés sur cet appareil."} Rouvre-en un pour le modifier, même son format.</p><div class="saved">${S.saved.map(b=>`<div class="sv ${b.id===S.boardId?"cur":""}"><div class="pv">${boardHTML(b,false)}</div><strong>${esc(b.name||"Mon tableau")}</strong><small>${esc(FORMATS[fmtKey(b.format)].n)}${b.support&&SUPPORTS[b.support]?" · "+SUPPORTS[b.support].n:""} · ${new Date(b.updatedAt).toLocaleDateString("fr-FR")}</small><div class="row"><button class="btn small" data-open="${b.id}">Ouvrir</button><button class="btn small ghost" data-copy="${b.id}">Copier</button>${ISADMIN?`<button class="btn small ghost" data-pub="${b.id}">${TPLIDS.has(b.id)?"★ Retirer des modèles":"☆ Publier comme modèle"}</button>`:""}<button class="btn small ghost" data-del="${b.id}" aria-label="Supprimer">✕</button></div></div>`).join("")}</div>`}
 function render(){
   renderSteps();const V=document.getElementById("view");let h="";
   if(S.page){h=pageHTML();
@@ -1697,7 +1720,7 @@ function render(){
     <div class="nav"><span></span><div class="opts">${S.boardId?`<button class="btn ghost" id="newb">Commencer un nouveau tableau</button><button class="btn" id="next">Continuer mon tableau ✦</button>`:`<button class="btn" id="newb">Entrer dans le studio ✦</button>`}</div></div></section>`;
   } else if(S.step===1){
     h=`<div class="studio"><section class="card tools" id="tools"></section><section class="stage">
-    <div class="toolbar"><button class="btn small ghost" id="guideBtn" title="Guide">❓<span class="lbl"> Guide</span></button>${OWNER?`<button class="btn small ghost" id="dlBtn" title="Télécharger le tableau">⬇<span class="lbl"> Télécharger</span></button>`:""}<button class="btn small" id="magicTop">✨ Arranger</button><button class="btn small ghost" id="undoBtn" title="Annuler (Ctrl+Z)">↶<span class="lbl"> Annuler</span></button><button class="btn small ghost" id="redoBtn" title="Rétablir (Ctrl+Y)">↷<span class="lbl"> Rétablir</span></button><span class="zoom"><button class="btn small ghost" id="zout" aria-label="Dézoomer">−</button><span id="zval">100 %</span><button class="btn small ghost" id="zin" aria-label="Zoomer">+</button></span><button class="btn small" id="panBtn" hidden></button><select id="fsel" aria-label="Format">${Object.entries(FORMATS).map(([k,f])=>`<option value="${k}" ${k===S.format?"selected":""}>${f.n}</option>`).join("")}</select><input type="text" id="bname" value="${esc(S.name)}" aria-label="Nom du tableau" maxlength="40"><span class="savest" id="savest"></span></div>
+    <div class="toolbar"><button class="btn small ghost" id="guideBtn" title="Guide">❓<span class="lbl"> Guide</span></button>${OWNER?`<button class="btn small ghost" id="dlBtn" title="Télécharger le tableau">⬇<span class="lbl"> Télécharger</span></button>`:""}<button class="btn small" id="magicTop">✨ Arranger</button><button class="btn small ghost" id="undoBtn" title="Annuler (Ctrl+Z)">↶<span class="lbl"> Annuler</span></button><button class="btn small ghost" id="redoBtn" title="Rétablir (Ctrl+Y)">↷<span class="lbl"> Rétablir</span></button><span class="zoom"><button class="btn small ghost" id="zout" aria-label="Dézoomer">−</button><span id="zval">100 %</span><button class="btn small ghost" id="zin" aria-label="Zoomer">+</button></span><button class="btn small" id="panBtn" hidden></button><select id="fsel" aria-label="Format">${Object.entries(FORMATS).map(([k,f])=>`<option value="${k}" ${k===S.format?"selected":""}>${f.n}</option>`).join("")}</select><input type="text" id="bname" value="${esc(S.name)}" aria-label="Nom du tableau" maxlength="40"><span class="savest" id="savest"></span><button class="btn small" id="keepBtn" ${S.keep?"hidden":""} title="Garder ce tableau dans Mes tableaux">💾<span class="lbl"> Enregistrer</span></button>${OWNER?`<button class="btn small ghost" id="wmBtn" title="Voir sans filigrane (toi seule)">👁<span class="lbl"> ${document.body.classList.contains("nowm")?"Avec filigrane":"Sans filigrane"}</span></button>`:""}</div>
     <div class="selbar" id="selbar"></div><div class="boardWrap" id="boardHost"></div>
     <div class="opts stagebtns" style="justify-content:center"><button class="btn" id="magic">✨ Arranger mon tableau</button><button class="btn ghost" id="shake">Secouer le moodboard</button><button class="btn" id="toPrev">Voir en situation →</button></div></section></div>`;
   } else if(S.step===2){
@@ -1728,11 +1751,12 @@ function render(){
   const on=(sel,fn)=>{const x=V.querySelector(sel);if(x)x.onclick=fn};
   on("#next",()=>go(1));on("#newb",newBoard);
   V.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openBoard(S.saved.find(x=>x.id===b.dataset.open)));
+  V.querySelectorAll("[data-pub]").forEach(b=>b.onclick=()=>publishTpl(b.dataset.pub,b));V.querySelectorAll("[data-usetpl]").forEach(b=>b.onclick=()=>useTpl(b.dataset.usetpl,b));
   V.querySelectorAll("[data-copy]").forEach(b=>b.onclick=async()=>{const o=S.saved.find(x=>x.id===b.dataset.copy);const c={...JSON.parse(JSON.stringify(o)),id:newBoardId(),name:(o.name||"Mon tableau")+" (copie)",updatedAt:Date.now()};try{await store.save(c);S.saved.unshift(c)}catch(e){}render()});
   V.querySelectorAll("[data-del]").forEach(b=>b.onclick=async()=>{const id=b.dataset.del;if(b.dataset.sure!=="1"){b.dataset.sure="1";b.textContent="Supprimer ?";b.classList.remove("ghost");return}try{await store.del(id)}catch(e){}S.saved=S.saved.filter(x=>x.id!==id);if(S.boardId===id){S.boardId=null;S.els=[]}render()});
   V.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>openPage(b.dataset.page));if(S.page)bindPage(V);
-  if(S.page==="boards")V.querySelectorAll(".sv .board").forEach((b,i)=>requestAnimationFrame(()=>drawSparks(b,S.saved[i])));
-  if(S.step===1&&!S.page){renderTools();renderBoardArea();on("#guideBtn",()=>startTour());on("#dlBtn",()=>exportBoard(document.getElementById("dlBtn")));if(!tourSeen()&&!S.tourAuto){S.tourAuto=true;setTimeout(()=>startTour(),700)}on("#shake",shake);on("#magic",magicArrange);on("#magicTop",magicArrange);on("#toPrev",()=>go(2));on("#undoBtn",undo);on("#redoBtn",redo);on("#zin",()=>setZoom(S.zoom*1.25));on("#zout",()=>setZoom(S.zoom/1.25));on("#zval",()=>setZoom(1));on("#panBtn",()=>{S.pan=!S.pan;if(S.pan)S.sel=null;renderBoardArea();updPan()});setZoom(S.zoom);
+  if(S.page==="boards")V.querySelectorAll(".sv .board").forEach((b,i)=>requestAnimationFrame(()=>drawSparks(b,S.saved[i])));if(S.page==="galerie"&&TPL)V.querySelectorAll(".sv .board").forEach((b,i)=>requestAnimationFrame(()=>drawSparks(b,TPL[i])));
+  if(S.step===1&&!S.page){renderTools();renderBoardArea();on("#guideBtn",()=>startTour());on("#dlBtn",()=>exportBoard(document.getElementById("dlBtn")));on("#keepBtn",keepBoard);on("#wmBtn",toggleWm);if(!tourSeen()&&!S.tourAuto){S.tourAuto=true;setTimeout(()=>startTour(),700)}on("#shake",shake);on("#magic",magicArrange);on("#magicTop",magicArrange);on("#toPrev",()=>go(2));on("#undoBtn",undo);on("#redoBtn",redo);on("#zin",()=>setZoom(S.zoom*1.25));on("#zout",()=>setZoom(S.zoom/1.25));on("#zval",()=>setZoom(1));on("#panBtn",()=>{S.pan=!S.pan;if(S.pan)S.sel=null;renderBoardArea();updPan()});setZoom(S.zoom);
     V.querySelector("#fsel").onchange=e=>setFormat(e.target.value);V.querySelector("#bname").oninput=e=>{S.name=e.target.value;scheduleSave()}}
   if(S.step===2&&!S.page){V.querySelectorAll(".board").forEach(b=>requestAnimationFrame(()=>drawSparks(b)));V.querySelectorAll("[data-sup]").forEach(b=>b.onclick=()=>{S.support=b.dataset.sup;scheduleSave();render()});V.querySelectorAll("[data-cadre]").forEach(b=>b.onclick=()=>{S.cadreCol=b.dataset.cadre;scheduleSave();render()});V.querySelectorAll("[data-ml]").forEach(b=>b.onclick=()=>{S.ml=b.dataset.ml==="1";scheduleSave();render()});V.querySelectorAll("[data-nb]").forEach(b=>b.onclick=()=>{S.nb=b.dataset.nb==="1";scheduleSave();render()});V.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{S.view=b.dataset.view;render()});on("#back",()=>go(1));on("#fin",openFinition);on("#dlBtn2",()=>exportBoard(document.getElementById("dlBtn2")))}
   if(S.step===3&&!S.page)bindFin(V);
@@ -1802,7 +1826,7 @@ function illuminate(force){
   if(HOSTED&&!FBUSER&&!force){loginModal("Connecte-toi pour que ta commande et ton tableau soient bien enregistrés : on pourra imprimer exactement ce que tu as créé.",()=>illuminate(true));return}
   document.getElementById("layer").innerHTML="";doSave();
   const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const show=()=>{const msg=orderText();{const dig=S.offer==="digital"||FORMATS[S.format].dig;const o={id:"o"+Date.now().toString(36),kind:"order",at:Date.now(),boardId:S.boardId,name:S.name||"Mon tableau",format:S.format,support:dig?"digital":S.support,digital:dig,offer:dig?"Pack Digital Lumineux":supLabel()+" · "+FORMATS[S.format].n,price:dig?DIGITAL_PRICE:price(),text:msg};S.orders=[o,...(S.orders||[])];store.saveOrder(o).catch(()=>{});fbOrder(o).catch(e=>console.error("order",e))}
+  const show=()=>{if(!S.keep)keepBoard();const msg=orderText();{const dig=S.offer==="digital"||FORMATS[S.format].dig;const o={id:"o"+Date.now().toString(36),kind:"order",at:Date.now(),boardId:S.boardId,name:S.name||"Mon tableau",format:S.format,support:dig?"digital":S.support,digital:dig,offer:dig?"Pack Digital Lumineux":supLabel()+" · "+FORMATS[S.format].n,price:dig?DIGITAL_PRICE:price(),text:msg};S.orders=[o,...(S.orders||[])];store.saveOrder(o).catch(()=>{});fbOrder(o).catch(e=>console.error("order",e))}
     document.getElementById("layer").innerHTML=`<div class="final"><h2>Ton année est illuminée</h2>${boardHTML(S,false,"width:min(92vw,calc(62vh * var(--arn)))")}
     <div class="opts" style="justify-content:center"><a class="btn" target="_blank" rel="noopener" href="https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}">Commander sur WhatsApp</a><button class="btn ghost" id="cp">Copier ma commande</button><button class="btn ghost" id="again">Modifier encore</button></div>
     <p class="ok" id="okc" hidden>Commande copiée.</p><p class="hint">Ton tableau reste enregistré : tu peux revenir le modifier quand tu veux.</p></div>`;
