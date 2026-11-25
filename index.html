@@ -510,6 +510,21 @@ canvas#fx{position:fixed;inset:0;width:100%;height:100%;z-index:80;pointer-event
   .toolbar #savest{order:-1}
   .toolbar #keepBtn .lbl{display:inline}
 }
+/* retours testeur (25/11) — téléphone */
+@media (max-width:900px){
+  /* même hauteur de panneau pour tous les onglets */
+  body.imgTab:not(.sheetMinB) .tools{height:48vh}
+  body.imgTab .boardWrap{--vh:calc(56vh - 150px)}
+  body.imgTab.sheetMinB .boardWrap{--vh:calc(100vh - 230px)}
+  /* poignée : on peut glisser la barre des onglets vers le bas / le haut */
+  .tools::before{content:"";display:block;flex:none;width:44px;height:5px;border-radius:3px;background:#d9c7b6;margin:-2px auto 2px}
+  .tools .tabs{touch-action:pan-x}
+  /* styles d'écriture sur une ligne qui défile */
+  .tools .styles{display:flex;overflow-x:auto;gap:6px;padding-bottom:3px}
+  .tools .styles .style{flex:0 0 118px}
+  /* « Supprimer » en premier dans la barre de l'élément choisi */
+  .selbar [data-a="del"]{order:-1}
+}
 </style>
 </head>
 <body>
@@ -1207,6 +1222,9 @@ function startBankDrag(ev,src,touch){
 function dropTarget(x,y,e){for(const n of document.elementsFromPoint(x,y)){const q=n.closest&&n.closest("#board .el");if(!q||q.dataset.id==e.id)continue;const t=S.els.find(z=>z.id==q.dataset.id);if(t&&(t.type==="photo"||t.type==="slot"))return t}return null}
 function swapPhotos(e,t,o){[e,t].forEach(z=>{if(z.pzb){delete z.pzb}if(z.pz<1)z.pz=1});Object.assign(e,{x:o.x,y:o.y,w:o.w,h:o.h,rot:o.rot});const K=["src","px","py","pz","anim","auto"];const a={},b={};K.forEach(k=>{a[k]=e[k];b[k]=t[k]});
   if(t.type==="slot"){t.type="photo";e.type="slot";K.forEach(k=>{t[k]=a[k];delete e[k]});t.fr=t.fr||"nu";S.sel=t.id}else{K.forEach(k=>{t[k]=a[k];e[k]=b[k];if(e[k]===undefined)delete e[k];if(t[k]===undefined)delete t[k]});S.sel=t.id}S.reframe=null;S.crop=null}
+/* nouvelle case vide (même cadre que le modèle) : la cliente la remplit, la déplace ou la supprime */
+function addSlot(){snap();const m=MODELS.find(x=>x.id===S.model)||MODELS[0];const w=26,h=w*AR()*1.12;const e={id:uid++,type:"slot",x:rnd(8,66),y:rnd(8,60),w,h,rot:0,fr:m.fr,deco:"",...(S.phc?{bk:S.phc}:{})};
+  const k=S.els.findIndex(z=>z.type==="text"||z.type==="sticker");S.els.splice(k>=0?k:S.els.length,0,e);S.sel=e.id;S.notice="";renderBoardArea();renderTools()}
 function fillSlot(s,src){snap();s.type="photo";s.src=src;s.fr=s.fr||"nu";if(S.phc&&!s.bk)s.bk=S.phc;s.deco="";s.anim=false;s.auto=false;S.sel=s.id;renderBoardArea();renderTools()}
 function addPhoto(src,x,y,free){
   if(!free){const selSlot=S.els.find(z=>z.id===S.sel&&z.type==="slot");const slot=selSlot||S.els.find(z=>z.type==="slot");if(slot){fillSlot(slot,src);return}}
@@ -1467,7 +1485,7 @@ function renderTools(){
     const qt=normQ(S.q||"");const hits=qt.length?B.filter(it=>qt.every(t=>searchText(it).some(w=>w.startsWith(t)))):null;
     const secs=hits?`<div class="bsec"><div class="bhead">Résultats pour « ${esc(S.q)} » <small>${hits.length}</small></div>${hits.length?`<div class="bank">${hits.map(th).join("")}</div>`:`<p class="lead" style="font-size:13px">Aucune image pour ces mots. Essaie un mot plus simple : plage, prière, bébé, voiture, argent…</p>`}</div>`:S.filter==="all"?doms.map(d=>{const L=B.filter(it=>it.d===d);return `<div class="bsec" id="sec-${d}"><div class="bhead">${DOMS[d]||d} <small>${L.length}</small></div><div class="bank">${L.map(th).join("")}</div></div>`}).join("")
       :(()=>{const L=B.filter(it=>(it.d===S.filter||it.x.includes(S.filter))&&!(S.filter==="sport"&&crossSex(it)));return `<div class="bsec"><div class="bhead">${DOMS[S.filter]||S.filter} <small>${L.length}</small></div><div class="bank">${L.map(th).join("")}</div></div>`})();
-    h+=`<div class="opts acts"><button class="perso" id="perso"><span class="pico">✨</span><span><strong>Image personnalisée</strong><small>Tes enfants, ta photo, ton prénom… créée rien que pour toi</small></span><span class="pprice">1 000 FCFA</span></button>${nslot?`<button class="btn small" id="fille">Remplir les ${nslot} cases vides</button>`:""}<label class="btn ghost small" for="up">Ajouter mes photos</label><button class="btn small ghost" id="clrp">Vider les photos</button><button class="btn small ghost" id="clra">Tout effacer</button></div>
+    h+=`<div class="opts acts"><button class="perso" id="perso"><span class="pico">✨</span><span><strong>Image personnalisée</strong><small>Tes enfants, ta photo, ton prénom… créée rien que pour toi</small></span><span class="pprice">1 000 FCFA</span></button>${nslot?`<button class="btn small" id="fille">Remplir les ${nslot} cases vides</button>`:""}<label class="btn ghost small" for="up">Ajouter mes photos</label><button class="btn small ghost" id="addslot">➕ Ajouter une case</button><button class="btn small ghost" id="clrp">Vider les photos</button><button class="btn small ghost" id="clra">Tout effacer</button></div>
     <p class="lead bhint" style="font-size:12px">${nslot?"Touche une image pour remplir la prochaine case vide. Pour la mettre dans une case précise : reste appuyée dessus puis glisse-la.":"Touche une image pour l'ajouter. Pour la placer toi-même : reste appuyée dessus puis glisse-la sur le tableau."}</p>
     <input type="file" id="up" accept="image/*" multiple hidden>
 
@@ -1481,8 +1499,8 @@ function renderTools(){
   } else if(S.tab==="textes"){
     const ed=S.els.find(e=>e.id===S.editing&&e.type==="text");
     h+=`${ed?`<span class="glabel">Modifier le texte sélectionné</span><div class="row"><input type="text" id="edtx" value="${esc(ed.text)}" maxlength="60"><button class="btn small" id="edok">OK</button></div>`:""}
+    <span class="glabel">Ma phrase</span><div class="row"><input type="text" id="own" placeholder="Écris ta phrase ici…" maxlength="60" enterkeyhint="done"><button class="btn small" id="addown">Ajouter</button></div>
     <span class="glabel">Style d'écriture</span><div class="styles">${TSTYLES.map(([k,l])=>`<button class="style" data-s="${k}" aria-pressed="${S.tstyle===k}"><span class="tx s-${k}" style="font-size:${k.startsWith("neon")?"22px":"14px"};padding:2px 6px">${l}</span></button>`).join("")}</div>
-    <span class="glabel">Ma phrase</span><div class="row"><input type="text" id="own" placeholder="Écris ton intention…" maxlength="60"><button class="btn small" id="addown">Ajouter</button></div>
     <span class="glabel">Bulles d'intention</span><div class="opts"><button class="btn small ghost" id="gen">Générer une bulle</button></div>
     <div class="chips">${WORDS.map(w=>`<button class="chip word" data-w="${esc(w)}">${esc(w)}</button>`).join("")}</div>
     <span class="glabel">Phrases toutes prêtes</span><div class="phrases">${Object.entries(PHR).map(([g,L])=>`<div class="glabel" style="color:var(--muted);margin-top:4px">${g}</div>`+L.map(p=>`<div class="prow"><button class="phrase" data-p="${esc(p)}">${esc(p)}</button><button class="pedit" data-pe="${esc(p)}" aria-label="Modifier puis ajouter">✏️</button></div>`).join("")).join("")}</div>`;
@@ -1503,6 +1521,8 @@ function renderTools(){
   T.querySelector(".tbody").scrollTop=keep;
   if(S.tab==="images"){const tb=T.querySelector(".tbody");let raf=0;tb.addEventListener("scroll",()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const top=tb.getBoundingClientRect().top+8;let cur="all";T.querySelectorAll(".bsec[id]").forEach(sc=>{if(sc.getBoundingClientRect().top<=top)cur=sc.id.slice(4)});
     T.querySelectorAll(".fixedc .chip").forEach(c=>{const on=c.dataset.f===cur;if(c.getAttribute("aria-pressed")!==String(on)){c.setAttribute("aria-pressed",on);if(on){const row=c.parentElement;row.scrollTo({left:c.offsetLeft-row.offsetWidth/2+c.offsetWidth/2,behavior:"smooth"})}}})})})}
+  {const bar=T.querySelector(".tabs");let y0=null,x0=0;if(bar){bar.addEventListener("touchstart",e=>{y0=e.touches[0].clientY;x0=e.touches[0].clientX},{passive:true});
+    bar.addEventListener("touchend",e=>{if(y0==null)return;const t=e.changedTouches[0],dy=t.clientY-y0,dx=t.clientX-x0;y0=null;if(Math.abs(dy)<40||Math.abs(dy)<Math.abs(dx))return;const want=dy>0;if(!!S.sheetMin===want)return;S.sheetMin=want;S.sheetAuto=false;renderTools();requestAnimationFrame(applyView)},{passive:true})}}
   T.querySelector("#sheetT").onclick=()=>{S.sheetMin=!S.sheetMin;S.sheetAuto=false;renderTools();requestAnimationFrame(applyView)};
   T.querySelectorAll(".tab[data-t]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.t;S.sheetMin=false;renderTools()});
   const wf=T.querySelector("#wfold");if(wf)wf.onclick=()=>{S.womenView={a:{"3545":"35","4555":"45"}[S.age]||"",c:S.teint||"noire"};S.q="";renderTools();const tb=document.querySelector("#tools .tbody");if(tb)tb.scrollTop=0};
@@ -1521,7 +1541,7 @@ function renderTools(){
   T.querySelectorAll(".thumb").forEach(b=>{b.addEventListener("pointerdown",ev=>bankPointer(ev,b));b.addEventListener("contextmenu",e=>e.preventDefault())});
   T.querySelectorAll(".thumb").forEach(b=>b.addEventListener("keydown",ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();addPhoto(b.dataset.src)}}));
   const on=(sel,fn)=>{const x=T.querySelector(sel);if(x)x.onclick=fn};
-  on("#perso",()=>openPerso(null));on("#clrp",clearPhotos);on("#clra",clearAll);on("#fille",fillEmpty);
+  on("#perso",()=>openPerso(null));on("#clrp",clearPhotos);on("#clra",clearAll);on("#fille",fillEmpty);on("#addslot",addSlot);
   const up=T.querySelector("#up");if(up)up.onchange=async()=>{for(const f of up.files){const d=await shrink(f);if(d){S.mine.unshift(d);cldUpload(f,pidOf(d))}}renderTools()};
   T.querySelectorAll(".model").forEach(b=>b.onclick=()=>{snap();S.fmtUndo=null;applyModel(b.dataset.m,false);S.notice="Modèle appliqué.";renderBoardArea(true);renderTools()});
   T.querySelectorAll(".bgopt").forEach(b=>b.onclick=()=>{snap();S.bg=b.dataset.bg;renderTools();renderBoardArea()});
@@ -1783,10 +1803,17 @@ function placeTour(){const L=document.getElementById("tourL");if(!L||S.tourI==nu
 function renderSteps(){document.getElementById("steps").innerHTML=STEPS.map((s,i)=>`<button data-s="${i}" ${i===S.step&&!S.page?'aria-current="step"':""}><b>${i+1}</b>${s}</button>`).join("")+`<button class="menuB" id="menuB" aria-label="Menu" aria-haspopup="true"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Menu</span></button>`;
   document.getElementById("menuB").onclick=openMenu;
   document.querySelectorAll("#steps button[data-s]").forEach(b=>b.onclick=()=>{const n=+b.dataset.s;if(n>0&&!S.boardId){newBoard();return}go(n)})}
-function go(n){if(S.tourI!=null)endTour();S.page=null;S.step=n;document.body.classList.toggle("studioOn",n===1);S.brush=false;document.body.classList.remove("brushOn");render();window.scrollTo({top:0})}
+function go(n){if(S.tourI!=null)endTour();S.page=null;S.step=n;document.body.classList.toggle("studioOn",n===1);S.brush=false;document.body.classList.remove("brushOn");render();window.scrollTo({top:0});navPush()}
+/* historique du navigateur : le bouton retour (Android) revient en arrière dans le site au lieu de le fermer */
+let NAVPOP=false;
+function navPush(){if(NAVPOP)return;const st={vb:1,step:S.step,page:S.page||null};const c=history.state;if(c&&c.vb&&c.step===st.step&&c.page===st.page)return;try{history.pushState(st,"")}catch(e){}}
+function closeOverlay(){const z=document.querySelector(".zoomOv");if(z){z.remove();return true}const m=document.getElementById("menuOv");if(m){m.remove();return true}
+  const L=document.getElementById("layer");if(L&&L.innerHTML.trim()){L.innerHTML="";return true}if(S.tourI!=null){endTour();return true}return false}
+window.addEventListener("popstate",e=>{if(closeOverlay()){try{history.pushState({vb:1,step:S.step,page:S.page||null},"")}catch(x){}return}
+  const st=e.state&&e.state.vb?e.state:{step:0,page:null};NAVPOP=true;try{if(st.page)openPage(st.page);else{if(st.step>=1&&!S.boardId){go(0)}else go(st.step||0)}}finally{NAVPOP=false}});
 const opt=(k,v,l,x="")=>`<button class="opt" data-k="${k}" data-v="${v}" aria-pressed="${S[k]===v}" ${x}>${l}</button>`;
 const fmtIcon=ar=>{const w=40*Math.sqrt(ar),h=40/Math.sqrt(ar);const k=Math.min(1,46/w,46/h);return`<span class="ic"><i style="width:${w*k}px;height:${h*k}px"></i></span>`};
-function openPage(p){if(S.tourI!=null)endTour();document.getElementById("layer").innerHTML="";closeMenu();if(p==="atelier"){if(S.boardId){go(1)}else{newBoard()}return}if(p==="new"){newBoard();return}if(p==="galerie"&&TPL===null)loadTpls().then(()=>{if(S.page==="galerie")render()});S.page=p;document.body.classList.remove("studioOn");render();window.scrollTo({top:0})}
+function openPage(p){if(S.tourI!=null)endTour();document.getElementById("layer").innerHTML="";closeMenu();if(p==="atelier"){if(S.boardId){go(1)}else{newBoard()}return}if(p==="new"){newBoard();return}if(p==="galerie"&&TPL===null)loadTpls().then(()=>{if(S.page==="galerie")render()});S.page=p;document.body.classList.remove("studioOn");render();window.scrollTo({top:0});navPush()}
 function closeMenu(){const m=document.getElementById("menuOv");if(m)m.remove()}
 function openMenu(){closeMenu();const items=[["atelier","Mon atelier","Continuer mon tableau dans le studio"],["boards","Mes tableaux",S.saved.length+" tableau"+(S.saved.length>1?"x":"")],["orders","Mes commandes",(S.orders||[]).length?(S.orders.length+" commande"+(S.orders.length>1?"s":"")):"Aucune pour l'instant"],["profil","Mon profil","Toi, ton teint, ton âge, tes coordonnées"],["galerie","Modèles","Des tableaux déjà composés à personnaliser"],["new","Nouveau tableau","Commencer un tableau vierge"],...(ISADMIN?[["admin","Commandes clientes","Espace administratrice"]]:[])];
   const infos=[["idees","Boîte à idées ✨"],["aide","Aide"],["livraison","Livraison"],["paiement","Paiement"],["faq","Questions fréquentes"],["apropos","À propos"],["contact","Contact"],["conditions","Conditions de vente"],["confidentialite","Confidentialité"]];
@@ -1917,7 +1944,7 @@ function render(){
   if(S.page==="boards")V.querySelectorAll(".sv[data-bid] .board").forEach(b=>{const x=S.saved.find(s=>s.id===b.closest(".sv").dataset.bid);if(x)requestAnimationFrame(()=>drawSparks(b,x))});if(S.page==="galerie"&&TPL)V.querySelectorAll(".sv .board").forEach((b,i)=>requestAnimationFrame(()=>drawSparks(b,TPL[i])));
   if(S.step===1&&!S.page){renderTools();renderBoardArea();on("#guideBtn",()=>startTour());on("#dlBtn",()=>exportBoard(document.getElementById("dlBtn")));on("#keepBtn",keepBoard);on("#tplBtn",()=>tplFromStudio(document.getElementById("tplBtn")));if(!tourSeen()&&!S.tourAuto){S.tourAuto=true;setTimeout(()=>startTour(),700)}on("#shake",shake);on("#magic",magicArrange);on("#magicTop",magicArrange);on("#toPrev",()=>go(2));on("#undoBtn",undo);on("#redoBtn",redo);on("#zin",()=>setZoom(S.zoom*1.25));on("#zout",()=>setZoom(S.zoom/1.25));on("#zval",()=>setZoom(1));on("#panBtn",()=>{S.pan=!S.pan;if(S.pan)S.sel=null;renderBoardArea();updPan()});setZoom(S.zoom);
     V.querySelector("#fsel").onchange=e=>setFormat(e.target.value);V.querySelector("#bname").oninput=e=>{S.name=e.target.value;scheduleSave()}}
-  if(S.step===2&&!S.page){V.querySelectorAll(".board").forEach(b=>requestAnimationFrame(()=>drawSparks(b)));V.querySelectorAll("[data-sup]").forEach(b=>b.onclick=()=>{S.support=b.dataset.sup;scheduleSave();render()});V.querySelectorAll("[data-cadre]").forEach(b=>b.onclick=()=>{S.cadreCol=b.dataset.cadre;scheduleSave();render()});V.querySelectorAll("[data-ml]").forEach(b=>b.onclick=()=>{S.ml=b.dataset.ml==="1";scheduleSave();render()});V.querySelectorAll("[data-nb]").forEach(b=>b.onclick=()=>{S.nb=b.dataset.nb==="1";scheduleSave();render()});V.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{S.view=b.dataset.view;render()});on("#back",()=>go(1));on("#fin",openFinition);on("#dlBtn2",()=>exportBoard(document.getElementById("dlBtn2")))}
+  if(S.step===2&&!S.page){V.querySelectorAll(".board").forEach(b=>requestAnimationFrame(()=>drawSparks(b)));V.querySelectorAll("[data-sup]").forEach(b=>b.onclick=()=>{S.support=b.dataset.sup;scheduleSave();render()});V.querySelectorAll("[data-cadre]").forEach(b=>b.onclick=()=>{S.cadreCol=b.dataset.cadre;scheduleSave();render()});V.querySelectorAll("[data-ml]").forEach(b=>b.onclick=()=>{S.ml=b.dataset.ml==="1";scheduleSave();render()});V.querySelectorAll("[data-nb]").forEach(b=>b.onclick=()=>{S.nb=b.dataset.nb==="1";scheduleSave();render()});V.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{S.view=b.dataset.view;render()});on("#back",()=>go(1));on("#fin",()=>go(3));on("#dlBtn2",()=>exportBoard(document.getElementById("dlBtn2")))}
   if(S.step===3&&!S.page)bindFin(V);
   requestAnimationFrame(()=>fitWS(V));
 }
@@ -2001,7 +2028,7 @@ function illuminate(force){
     if(t>1300&&!shown){shown=true;show()}if(t<2600)requestAnimationFrame(tick);else c.remove()})(start);
 }
 {const pf=lsGet("profile");if(pf)for(const k of ["sexe","teint","hair","age","nom","tel","ville"])if(pf[k]!=null)S[k]=pf[k]}
-render();initStore();
+render();try{history.replaceState({vb:1,step:S.step,page:null},"")}catch(e){}initStore();
 /* toucher à côté du tableau = tout désélectionner */
 (function(){let sx=0,sy=0;document.addEventListener("pointerdown",e=>{sx=e.clientX;sy=e.clientY},true);
  document.addEventListener("pointerup",e=>{if(S.step!==1||!(S.sel||S.crop||S.reframe||S.notice))return;if(Math.hypot(e.clientX-sx,e.clientY-sy)>8)return;
