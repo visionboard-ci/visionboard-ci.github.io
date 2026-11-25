@@ -63,11 +63,11 @@ header.top{display:flex;justify-content:space-between;align-items:flex-end;gap:1
 .acct{font-size:12px;color:var(--muted);border:1px solid var(--line);padding:6px 12px;border-radius:20px;display:flex;align-items:center;gap:8px}
 .acct i{width:8px;height:8px;border-radius:50%;background:#9BE3B8;box-shadow:0 0 8px #9BE3B8}
 .acct.off i{background:var(--gold);box-shadow:0 0 8px var(--gold)}
-.steps{display:flex;gap:6px;flex-wrap:wrap}
-.steps button{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--panel);color:var(--muted);padding:7px 13px;border-radius:20px;cursor:pointer;display:flex;align-items:center;gap:7px}
-.steps button b{display:grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--panel2);color:var(--ink);font-size:11px}
-.steps button[aria-current="step"]{color:var(--ink);border-color:var(--gold);box-shadow:0 0 14px rgba(242,196,107,.35)}
-.steps button[aria-current="step"] b{background:var(--gold);color:var(--plum)}
+.steps{display:flex;align-items:stretch;gap:0;width:100%;border-bottom:1px solid var(--line)}
+.steps button[data-s]{flex:1 1 0;min-width:0;font:inherit;font-size:13px;background:none;border:0;border-bottom:3px solid transparent;margin-bottom:-1px;color:var(--muted);padding:8px 4px 7px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;line-height:1.2;text-align:left;border-radius:0}
+.steps button[data-s] b{font-family:var(--f-display);font-size:17px;font-weight:600;color:var(--muted);opacity:.7;flex:none}
+.steps button[data-s].done{color:var(--ink);border-bottom-color:rgba(185,138,69,.45)}.steps button[data-s].done b{color:var(--gold)}
+.steps button[aria-current="step"]{color:var(--ink);font-weight:600;border-bottom-color:var(--gold2)}.steps button[aria-current="step"] b{color:var(--gold2);opacity:1}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;backdrop-filter:blur(6px);display:flex;flex-direction:column;gap:16px;min-width:0}
 .card h2{margin:0;font-family:var(--f-display);font-weight:600;font-size:27px;letter-spacing:.01em}
 .lead{margin:0;color:var(--muted)}
@@ -177,8 +177,7 @@ select option{background:#FBF6F0;color:#2F2329}
   .stage{position:static}
   .studioOn header.top{display:none}
   .studioOn .wrap{padding-top:max(14px,env(safe-area-inset-top,0px));gap:10px}
-  .studioOn .steps{flex-wrap:nowrap;overflow-x:auto}
-  .studioOn .steps button{padding:5px 10px;font-size:12px;flex:none}
+  .studioOn .steps button[data-s]{padding:6px 2px 6px;font-size:12px}
   .selbar,.toolbar{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding-bottom:2px}
   .selbar>*,.toolbar>*{flex:none}
   .toolbar input{width:140px}
@@ -594,6 +593,43 @@ canvas#fx{position:fixed;inset:0;width:100%;height:100%;z-index:80;pointer-event
 .menuOv{justify-content:flex-start}
 .menuP{box-shadow:10px 0 40px rgba(60,35,20,.25)}
 @media (max-width:900px){.fact{overflow:visible;flex-wrap:nowrap}.fpills{flex-wrap:nowrap;overflow-x:auto;padding-bottom:2px}.fpills>*{flex:none}}
+
+/* prototype ergonomie (3) */
+/* onglets d'étapes : téléphone, tout tient sur la largeur */
+.steps .menuB{flex:none;align-self:center;margin:0 6px 4px 0}
+@media (max-width:600px){
+  .steps button[data-s]{font-size:11.5px;gap:4px;padding:6px 2px;flex-direction:column;text-align:center}
+  .steps button[data-s] b{font-size:15px}
+  .steps .menuB{padding:6px 9px}.steps .menuB span{display:none}
+}
+.popSp{flex:1}
+/* texte sous la barre d'outils : en entier, sans glisser */
+.selbar>.hint{flex:1 1 0!important;min-width:0;white-space:normal;text-align:center;line-height:1.35}
+/* Réglages : information « Enregistré » en haut, interrupteur */
+.popH .savest{font-size:11px;white-space:nowrap}.popH .savest.ok{color:#2E9D63}
+.tgl{display:flex;align-items:center;gap:12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer}
+.tgl>span{flex:1;display:flex;flex-direction:column;gap:2px}.tgl small{color:var(--muted);font-size:12px;line-height:1.35}
+.tgl input{position:absolute;opacity:0;pointer-events:none}
+.tgl i{flex:none;width:42px;height:24px;border-radius:12px;background:#D9CCC0;position:relative;transition:background .2s}
+.tgl i::after{content:"";position:absolute;top:3px;left:3px;width:18px;height:18px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.tgl input:checked+i{background:#2E9D63}.tgl input:checked+i::after{transform:translateX(18px)}
+.tgl input:focus-visible+i{outline:3px solid var(--gold2);outline-offset:2px}
+/* filtre unique : effet magique */
+.fo.fu{position:relative;overflow:hidden;border:1.5px solid transparent;border-style:solid;background:linear-gradient(#fff,#fff) padding-box,linear-gradient(115deg,#E9C46A,#F4B6C2,#B98A45,#F7C6A3,#E9C46A) border-box;background-size:100% 100%,300% 100%;padding-right:16px}
+.fo.fu[aria-pressed="true"]{background:linear-gradient(115deg,#3A2A33,#5A3D4C) padding-box,linear-gradient(115deg,#E9C46A,#F4B6C2,#B98A45,#F7C6A3,#E9C46A) border-box;background-size:100% 100%,300% 100%;color:#fff}
+.fo.fu::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 30%,rgba(255,236,190,.8) 50%,transparent 70%);transform:translateX(-130%);pointer-events:none}
+.fo.fu .tw{position:absolute;font-style:normal;color:#D9A441;font-size:9px;opacity:0;pointer-events:none}
+.fo.fu .t1{top:2px;right:5px}.fo.fu .t2{bottom:1px;right:22%;font-size:7px}.fo.fu .t3{top:3px;left:42%;font-size:8px}
+.burst{position:fixed;z-index:120;pointer-events:none;color:#E2AE4C;font-style:normal;text-shadow:0 0 6px rgba(255,214,140,.9);transform:translate(-50%,-50%)}
+@media (prefers-reduced-motion:no-preference){
+  .fo.fu{animation:fuBorder 5s linear infinite}.fo.fu::after{animation:fuShine 3.6s ease-in-out infinite}
+  .fo.fu .tw{animation:fuTw 2.4s ease-in-out infinite}.fo.fu .t2{animation-delay:.8s}.fo.fu .t3{animation-delay:1.6s}
+  .burst{animation:burst .9s cubic-bezier(.2,.8,.3,1) forwards}
+  @keyframes fuBorder{to{background-position:0 0,300% 0}}
+  @keyframes fuShine{0%,55%{transform:translateX(-130%)}100%{transform:translateX(130%)}}
+  @keyframes fuTw{0%,100%{opacity:0;transform:scale(.4) rotate(0)}50%{opacity:1;transform:scale(1.1) rotate(45deg)}}
+  @keyframes burst{0%{opacity:1;transform:translate(-50%,-50%) scale(.4)}100%{opacity:0;transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(1) rotate(90deg)}}
+}
 </style>
 </head>
 <body><div style="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:200;background:#B7772F;color:#fff;font:600 11px/1 Poppins,system-ui,sans-serif;padding:4px 10px;border-radius:99px;pointer-events:none;letter-spacing:.08em;opacity:.9">VERSION D'ESSAI</div>
@@ -813,13 +849,13 @@ function crossSex(it){/* homme seul (pour une femme) ou femme seule (pour un hom
 
 /* Dossier Femmes (profil homme) */
 const WAGE=[["","20-35 ans"],["35","35-45 ans"],["45","45-55 ans"]],WTEINT=[["noire","Noire"],["metisse","Métisse"],["claire","Claire"]];
-function womenFolderL(v){const W=S.sexe==="H";return DATA.filter(it=>!it.dup&&it.t===(W?"femme":"homme")&&it.p===(W?"F":"H")&&(it.a||"")===v.a&&it.c===v.c)}
+function womenFolderL(v){const W=S.sexe==="H";const A=[].concat(v.a),C=[].concat(v.c);return DATA.filter(it=>!it.dup&&it.t===(W?"femme":"homme")&&it.p===(W?"F":"H")&&A.includes(it.a||"")&&C.includes(it.c))}
 function womenFolderH(th,FD,qt){const v=S.womenView;const DORD=["love","beaute","mode","selflove","healthy","sport","famille","maternite","argent","voiture","nouvelles","business","succes","confiance","voyage","maison","terre","foi","etudes","cozy","brunch","celebration","creativite","amitie"];
   let L=womenFolderL(v);if(FD&&FD.length)L=L.filter(it=>FD.some(d=>it.d===d||it.x.includes(d)));if(qt&&qt.length)L=L.filter(it=>qt.every(t=>searchText(it).some(w=>w.startsWith(t))));
   const doms=[...new Set(L.map(i=>i.d))].sort((a,b)=>DORD.indexOf(a)-DORD.indexOf(b));
   return L.length?doms.map(d=>{const M=L.filter(i=>i.d===d);return `<div class="bsec"><div class="bhead">${DOMS[d]||d} <small>${M.length}</small></div><div class="bank">${M.map(th).join("")}</div></div>`}).join(""):`<p class="lead" style="font-size:13px">Pas encore de photos pour ce choix. Change l'âge, le teint ou les thèmes dans les filtres.</p>`}
 const wLabel=()=>S.sexe==="H"?"Femmes":"Hommes";const wTeint=k=>(S.sexe==="H"?{noire:"Noire",metisse:"Métisse",claire:"Claire"}:{noire:"Noir",metisse:"Métis",claire:"Clair"})[k]||"";
-const wSum=v=>`${wLabel()} · ${(WAGE.find(x=>x[0]===v.a)||["",""])[1]} · ${wTeint(v.c)}`;
+const wSum=v=>`${wLabel()} · ${WAGE.filter(x=>[].concat(v.a).includes(x[0])).map(x=>x[1].replace(" ans","")).join(", ")} ans · ${WTEINT.filter(x=>[].concat(v.c).includes(x[0])).map(x=>wTeint(x[0])).join(", ")}`;
 /* dézoom photo : sous 100 % la photo entière se voit (contain) */
 const pzStyle=pz=>`transform:scale(${Math.max(1,pz||1)})`;
 /* dézoom sous 100 % : le cadre se resserre doucement autour de la photo jusqu'à la montrer entière (pas de bande vide) */
@@ -852,7 +888,8 @@ function fitsView(it,v){if(!it||it.dup||it.t==="commune"||it.t==="mains")return 
   if((it.a||"")!==AGEV[v][1])return false;if(it.c2&&S.sexe==="H")return it.c2===S.teint;if(it.c==="mixte")return S.sexe==="F"&&S.teint!=="claire";return it.c===S.teint}
 const hg=h=>h==="b"?"b":h?"c":"";
 const hairSort=L0=>{const P=L0.filter(i=>i.t!=="commune");const mc=i=>(S.sexe==="H"&&i.c2?i.c2:i.c)===S.teint||i.c==="mixte";const L=P.filter(mc).concat(P.filter(i=>!mc(i)),L0.filter(i=>i.t==="commune"));const own=L.filter(i=>!crossSex(i)),cross=L.filter(crossSex);if(S.teint!=="claire"||!S.hair)return own.concat(cross);const g=hg(S.hair);return own.filter(i=>hg(i.h)===g).concat(own.filter(i=>hg(i.h)!==g),cross)};
-const bank=()=>{if(S.ageView&&S.ageView!==S.age&&AGEV[S.ageView])return hairSort(DATA.filter(it=>fitsView(it,S.ageView)));const b=DATA.filter(fits);const a=S.age==="3545"?"35":S.age==="4555"?"45":null;return hairSort(a?b.filter(i=>i.a===a).concat(b.filter(i=>i.a!==a)):b)};
+const bank=()=>{const AV=(S.ageViews||[]).filter(k=>AGEV[k]);if(AV.length&&!(AV.length===1&&AV[0]===S.age)){const seen=new Set(),out=[];for(const k of AV)(k===S.age?DATA.filter(fits):DATA.filter(it=>fitsView(it,k))).forEach(i=>{if(!seen.has(i.f)){seen.add(i.f);out.push(i)}});return hairSort(out)}
+if(S.ageView&&S.ageView!==S.age&&AGEV[S.ageView])return hairSort(DATA.filter(it=>fitsView(it,S.ageView)));const b=DATA.filter(fits);const a=S.age==="3545"?"35":S.age==="4555"?"45":null;return hairSort(a?b.filter(i=>i.a===a).concat(b.filter(i=>i.a!==a)):b)};
 /* images regroupées en paquets : chargées à la demande */
 const TRANSP="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
 const ZI=Object.fromEntries(DATA.map(i=>[i.f,i.z]));const BLOB=new Map();const PK={};
@@ -1093,7 +1130,8 @@ function renderBoardArea(animate){
     n.animate([{translate:`${o.left-nr.left}px ${o.top-nr.top}px`},{translate:"0 0"}],{duration:650,easing:"cubic-bezier(.2,.8,.2,1)"})});
   applyView();fitWS(b);renderSelbar();renderToolbar();scheduleSave();
 }
-function renderToolbar(){const u=document.getElementById("undoBtn");if(u)u.disabled=!S.hist.length;const rd=document.getElementById("redoBtn");if(rd)rd.disabled=!(S.fut&&S.fut.length);const kb=document.getElementById("keepBtn");if(kb)kb.hidden=!!S.keep;const st=document.getElementById("savest");if(st){st.textContent=S.keep?S.saveState:(S.saveState||"Pas encore enregistré");st.className="savest"+(S.saveState.includes("✓")?" ok":"");st.hidden=!S.keep/* le bouton « Enregistrer » dit déjà que ce n'est pas enregistré */}}
+const saveLabel=()=>S.keep?S.saveState:(S.saveState||"Pas encore enregistré");
+function renderToolbar(){const u=document.getElementById("undoBtn");if(u)u.disabled=!S.hist.length;const rd=document.getElementById("redoBtn");if(rd)rd.disabled=!(S.fut&&S.fut.length);const kb=document.getElementById("keepBtn");if(kb)kb.hidden=!!S.keep;const st=document.getElementById("savest");if(st){const l=saveLabel();st.textContent=l;st.className="savest"+(l.includes("✓")?" ok":"")}}
 window.addEventListener("error",e=>{if(S&&S.brush){const n=document.getElementById("spN");if(n)n.textContent="(err "+(e.message||"")+")"}});
 function renderSelbar(){const bar=document.getElementById("selbar");if(!bar)return;if(S.brush){bar.innerHTML=`<button class="btn small" id="brOff">✓ Arrêter le pinceau</button><button class="btn small ghost" id="spUndo">↶</button><span class="hint">✨ Glisse sur le tableau <b id="spN" style="opacity:.6;font-weight:500">(${S.sparks.length})</b></span>${spOpts("mini")}`;bindSpOpts(bar);bar.querySelector("#brOff").onclick=()=>{S.brush=false;document.body.classList.remove("brushOn");S.sheetMin=false;renderTools();renderBoardArea()};bar.querySelector("#spUndo").onclick=undo;return}if(S.zoom>1.01&&!S.sel&&!S.notice){bar.innerHTML=`<span class="hint">${S.pan?"Glisse pour te déplacer. Retouche le bouton ✋ pour modifier.":"Glisse le tableau pour te déplacer · touche une photo (sans glisser) pour la modifier · « Voir tout » pour revenir."}</span>`;return}const e=S.els.find(x=>x.id===S.sel);
   if(S.fmtUndo&&!e){bar.innerHTML=`<span class="hint">Le tableau a été réorganisé pour ce format.</span><button class="btn small ghost" id="keepl">Garder plutôt ma disposition d'avant</button>`;bar.querySelector("#keepl").onclick=keepLayout;return}
@@ -1228,9 +1266,9 @@ function bindBoard(b){
       else if(handle==="res"){const k=Math.max(.25,1+((e2.clientX-sx)+(e2.clientY-sy))/(er.width+er.height));if(e.type==="text"){e.fs=Math.max(1.6,o.fs*k);e.w=Math.min(100,o.w*k);if(o.h!=null)e.h=o.h*k}else{e.w=o.w*k;if(e.h)e.h=o.h*k}}
       else if(handle==="rot"){e.rot=Math.atan2(e2.clientY-cy,e2.clientX-cx)*180/Math.PI+90}
       else{e.x=o.x+dx;e.y=o.y+dy}
-      if(!handle&&e.type==="photo"){node.style.pointerEvents="none";const t=dropTarget(e2.clientX,e2.clientY,e);node.style.pointerEvents="";document.querySelectorAll("#board .dropT").forEach(q=>{if(!t||q.dataset.id!=t.id)q.classList.remove("dropT")});if(t){const q=document.querySelector(`#board .el[data-id="${t.id}"]`);if(q)q.classList.add("dropT")}}
+      if(!handle&&e.type==="photo"&&autoSwapOn()){node.style.pointerEvents="none";const t=dropTarget(e2.clientX,e2.clientY,e);node.style.pointerEvents="";document.querySelectorAll("#board .dropT").forEach(q=>{if(!t||q.dataset.id!=t.id)q.classList.remove("dropT")});if(t){const q=document.querySelector(`#board .el[data-id="${t.id}"]`);if(q)q.classList.add("dropT")}}
       node.style.left=e.x+"%";node.style.top=e.y+"%";node.style.width=e.w+"%";if(e.h!=null)node.style.height=e.h+"%";node.style.transform=`rotate(${e.rot}deg)`;const tx=node.querySelector(".tx");if(tx)tx.style.fontSize=e.fs+"cqw"};
-    const up=e2=>{if(e2.pointerId!==ev.pointerId)return;document.removeEventListener("pointermove",mv);document.removeEventListener("pointerup",up);document.removeEventListener("pointercancel",up);document.querySelectorAll("#board .dropT").forEach(q=>q.classList.remove("dropT"));if(snapped&&!handle&&e.type==="photo"){node.style.pointerEvents="none";const t=dropTarget(e2.clientX,e2.clientY,e);node.style.pointerEvents="";if(t){swapPhotos(e,t,o);renderBoardArea();renderTools();scheduleSave();return}}if(snapped){if(e.pzb){delete e.pzb;e.pz=1}renderSelbar();renderToolbar();scheduleSave()}
+    const up=e2=>{if(e2.pointerId!==ev.pointerId)return;document.removeEventListener("pointermove",mv);document.removeEventListener("pointerup",up);document.removeEventListener("pointercancel",up);document.querySelectorAll("#board .dropT").forEach(q=>q.classList.remove("dropT"));if(snapped&&!handle&&e.type==="photo"&&autoSwapOn()){node.style.pointerEvents="none";const t=dropTarget(e2.clientX,e2.clientY,e);node.style.pointerEvents="";if(t){swapPhotos(e,t,o);renderBoardArea();renderTools();scheduleSave();return}}if(snapped){if(e.pzb){delete e.pzb;e.pz=1}renderSelbar();renderToolbar();scheduleSave()}
       else if(wasSel&&!dead&&!S.crop&&!S.reframe){/* 2e toucher au même endroit : sélectionne l'élément caché dessous */
         const B=document.getElementById("board");const ids=[];document.elementsFromPoint(e2.clientX,e2.clientY).forEach(n=>{const q=n.closest&&n.closest("#board .el");if(q&&!ids.includes(q.dataset.id))ids.push(q.dataset.id)});
         B.querySelectorAll(".el").forEach(q=>{if(ids.includes(q.dataset.id))return;const r2=q.getBoundingClientRect();if(e2.clientX>=r2.left&&e2.clientX<=r2.right&&e2.clientY>=r2.top&&e2.clientY<=r2.bottom)ids.push(q.dataset.id)});
@@ -1291,6 +1329,8 @@ function startBankDrag(ev,src,touch){
   document.addEventListener("pointermove",mv,{passive:false});document.addEventListener("pointerup",up);document.addEventListener("pointercancel",up);
 }
 function dropTarget(x,y,e){for(const n of document.elementsFromPoint(x,y)){const q=n.closest&&n.closest("#board .el");if(!q||q.dataset.id==e.id)continue;const t=S.els.find(z=>z.id==q.dataset.id);if(t&&(t.type==="photo"||t.type==="slot"))return t}return null}
+/* « Ajustement automatique » (Réglages) : glisser une photo sur une autre les échange. Réglage gardé sur l'appareil. */
+function autoSwapOn(){return lsGet("autoSwap")!==false}
 function swapPhotos(e,t,o){[e,t].forEach(z=>{if(z.pzb){delete z.pzb}if(z.pz<1)z.pz=1});Object.assign(e,{x:o.x,y:o.y,w:o.w,h:o.h,rot:o.rot});const K=["src","px","py","pz","anim","auto"];const a={},b={};K.forEach(k=>{a[k]=e[k];b[k]=t[k]});
   if(t.type==="slot"){t.type="photo";e.type="slot";K.forEach(k=>{t[k]=a[k];delete e[k]});t.fr=t.fr||"nu";S.sel=t.id}else{K.forEach(k=>{t[k]=a[k];e[k]=b[k];if(e[k]===undefined)delete e[k];if(t[k]===undefined)delete t[k]});S.sel=t.id}S.reframe=null;S.crop=null}
 /* nouvelle case vide (même cadre que le modèle) : la cliente la remplit, la déplace ou la supprime */
@@ -1583,7 +1623,7 @@ function renderTools(){
   let h="",fixedH="";
   if(S.tab==="images"){
     const used=new Set(S.els.filter(e=>e.type==="photo").map(e=>e.src));const nslot=S.els.filter(e=>e.type==="slot").length;
-    const B=bank();const nF=(S.womenView?1:(S.ageView&&S.ageView!==S.age&&AGEV[S.ageView]?1:0))+(S.fdoms||[]).filter(d=>DOMS[d]).length;
+    const B=bank();const nF=(S.womenView?1:ageViewsOn().length)+(S.fdoms||[]).filter(d=>DOMS[d]).length;
     const doms=[...new Set(B.map(i=>i.d))].sort((a,b)=>(DORD.indexOf(a)+99)%199-(DORD.indexOf(b)+99)%199);
     const th=it=>`<button class="thumb ${used.has(it.f)?"on":""}" data-src="${it.f}" aria-label="${it.f}"><img src="${imgSrc(it.f)}" data-f="${it.f}" alt=""><span class="zm" role="button" tabindex="-1" aria-label="Voir en grand"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5M11 8v6M8 11h6"/></svg></span></button>`;
     const mineH=S.mine.length?`<div class="bsec"><div class="bhead">Mes photos <small>${S.mine.length}</small></div><div class="bank">${S.mine.map((m,i)=>`<button class="thumb ${used.has(m)?"on":""}" data-src="${m}" aria-label="Ma photo ${i+1}"><img src="${m}" alt=""></button>`).join("")}</div></div>`:"";
@@ -1595,7 +1635,7 @@ function renderTools(){
     <input type="file" id="up" accept="image/*" multiple hidden>
 
     ${S.womenView?womenFolderH(th,FD,qt):mineH+secs}`;
-    fixedH=`<div class="srch"><button class="btn small ghost fbtn${nF?" on":""}" id="filtBtn" aria-haspopup="dialog" aria-label="Filtres" title="Filtres">${ICO.funnel}${nF?`<b class="fcnt">${nF}</b>`:""}</button><input type="text" id="q" placeholder="Rechercher : plage, bébé, voiture…" value="${esc(S.q||"")}" autocomplete="off" enterkeyhint="search">${S.q?`<button class="btn small ghost" id="qx" aria-label="Effacer la recherche">✕</button>`:""}</div>${nF?`<div class="fact"><button class="fclr" id="fclr">Tout effacer</button><div class="fpills">${S.womenView?`<button class="fpill fpu" data-rm="w">${wSum(S.womenView)} ✕</button>`:""}${!S.womenView&&S.ageView&&S.ageView!==S.age&&AGEV[S.ageView]?`<button class="fpill" data-rm="age">${AGEV[S.ageView][0]} ✕</button>`:""}${FD.map(d=>`<button class="fpill" data-rm="${d}">${DOMS[d]} ✕</button>`).join("")}</div></div>`:""}`;
+    fixedH=`<div class="srch"><button class="btn small ghost fbtn${nF?" on":""}" id="filtBtn" aria-haspopup="dialog" aria-label="Filtres" title="Filtres">${ICO.funnel}${nF?`<b class="fcnt">${nF}</b>`:""}</button><input type="text" id="q" placeholder="Rechercher : plage, bébé, voiture…" value="${esc(S.q||"")}" autocomplete="off" enterkeyhint="search">${S.q?`<button class="btn small ghost" id="qx" aria-label="Effacer la recherche">✕</button>`:""}</div>${nF?`<div class="fact"><button class="fclr" id="fclr">Tout effacer</button><div class="fpills">${S.womenView?`<button class="fpill fpu" data-rm="w">${wSum(S.womenView)} ✕</button>`:""}${S.womenView?"":ageViewsOn().map(k=>`<button class="fpill" data-rm="age:${k}">${k===S.age?"Mon âge":AGEV[k][0]} ✕</button>`).join("")}${FD.map(d=>`<button class="fpill" data-rm="${d}">${DOMS[d]} ✕</button>`).join("")}</div></div>`:""}`;
   } else if(S.tab==="modeles"){
     h+=`${isSmall()?`<p class="lead" style="font-size:12px;color:var(--gold2)">Petit format : chaque modèle a 6 images maximum, pour que tes photos et tes écritures restent bien lisibles.</p>`:""}<p class="lead" style="font-size:12px">Des modèles calculés pour ton format (${esc(FORMATS[S.format].n)}). Tes photos restent, elles changent juste de place.</p><div class="models">${MODELS.filter(m=>!HIDDEN_MODELS.has(m.id)&&!(isSmall()&&m.id==="vedette")).map(m=>`<button class="model" data-m="${m.id}" aria-pressed="${S.model===m.id}"><div class="mwrap">${miniModel(m)}</div><strong>${m.n}</strong></button>`).join("")}</div>
     <span class="glabel">Fond</span><div class="opts">${BGS.map(b=>`<button class="opt bgopt" data-bg="${b}" aria-pressed="${S.bg===b}" style="padding:5px" aria-label="Fond ${b}"><span class="sw bg-${b}" style="width:28px;height:28px;border-radius:8px;container-type:inline-size"></span></button>`).join("")}</div>
@@ -1639,8 +1679,8 @@ function renderTools(){
     qi.onkeydown=e=>{if(e.key==="Enter")qi.blur()}}
   const qx=T.querySelector("#qx");if(qx)qx.onclick=()=>{S.q="";renderTools()};
   {const fb=T.querySelector("#filtBtn");if(fb)fb.onclick=()=>openFilters(fb);const top0=()=>{const tb=document.querySelector("#tools .tbody");if(tb)tb.scrollTop=0};
-   T.querySelectorAll(".fpill").forEach(b=>b.onclick=()=>{const r=b.dataset.rm;if(r==="w")S.womenView=null;else if(r==="age")S.ageView=null;else S.fdoms=(S.fdoms||[]).filter(d=>d!==r);renderTools();top0()});
-   const fc=T.querySelector("#fclr");if(fc)fc.onclick=()=>{S.ageView=null;S.fdoms=[];S.womenView=null;renderTools();top0()}}
+   T.querySelectorAll(".fpill").forEach(b=>b.onclick=()=>{const r=b.dataset.rm;if(r==="w")S.womenView=null;else if(r.startsWith("age:"))S.ageViews=ageViewsOn().filter(k=>k!==r.slice(4));else S.fdoms=(S.fdoms||[]).filter(d=>d!==r);renderTools();top0()});
+   const fc=T.querySelector("#fclr");if(fc)fc.onclick=()=>{S.ageView=null;S.ageViews=[];S.fdoms=[];S.womenView=null;renderTools();top0()}}
   T.querySelectorAll(".chip[data-f]").forEach(b=>b.onclick=()=>{const d=b.dataset.f;if(S.womenView){S.womenView=null;renderTools()}if(S.q){S.q="";renderTools()}const tb=T.querySelector(".tbody");
     if(S.filter!=="all"){S.filter="all";renderTools()}
     const T2=document.getElementById("tools"),tb2=T2.querySelector(".tbody");
@@ -1908,7 +1948,7 @@ function placeTour(){const L=document.getElementById("tourL");if(!L||S.tourI==nu
   else if(r.top>H*.5){top=r.top-bh-62;handTop=r.top-52;rot=180}else{top=r.bottom+62;handTop=r.bottom+6}
   top=Math.max(10,Math.min(H-bh-10,top));bub.style.left=left+"px";bub.style.top=top+"px";
   hand.style.cssText=`display:block;left:${cx-20}px;top:${handTop}px;--rot:${rot}deg`}
-function renderSteps(){document.getElementById("steps").innerHTML=`<button class="menuB" id="menuB" aria-label="Menu" aria-haspopup="true"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Menu</span></button>`+STEPS.map((s,i)=>`<button data-s="${i}" ${i===S.step&&!S.page?'aria-current="step"':""}><b>${i+1}</b>${s}</button>`).join("");
+function renderSteps(){document.getElementById("steps").innerHTML=`<button class="menuB" id="menuB" aria-label="Menu" aria-haspopup="true"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span>Menu</span></button>`+STEPS.map((s,i)=>`<button data-s="${i}" class="${!S.page&&i<S.step?"done":""}" ${i===S.step&&!S.page?'aria-current="step"':""}><b>${i+1}</b><span>${s}</span></button>`).join("");
   document.getElementById("menuB").onclick=openMenu;
   document.querySelectorAll("#steps button[data-s]").forEach(b=>b.onclick=()=>{const n=+b.dataset.s;if(n>0&&!S.boardId){newBoard();return}go(n)})}
 function go(n){if(S.tourI!=null)endTour();S.page=null;S.step=n;document.body.classList.toggle("studioOn",n===1);S.brush=false;document.body.classList.remove("brushOn");render();window.scrollTo({top:0});navPush()}
@@ -1920,44 +1960,50 @@ function navPush(){if(NAVPOP)return;const st={vb:1,step:S.step,page:S.page||null
    Elle se ferme avec ✕, Échap, le bouton retour d'Android ou en touchant à côté. */
 const ICO={gear:`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>`,
   funnel:`<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 5h17l-6.5 8v5.5l-4 2V13z"/></svg>`};
+/* petite pluie d'étoiles dorées autour d'un bouton (filtre unique) */
+function sparkBurst(r){if(matchMedia("(prefers-reduced-motion:reduce)").matches)return;const cx=r.left+r.width/2,cy=r.top+r.height/2;
+  for(let i=0;i<12;i++){const s=document.createElement("i");s.className="burst";s.textContent=i%3?"✦":"✧";const a=Math.PI*2*i/12+Math.random()*.4,d=r.width*.45+Math.random()*30;
+    s.style.cssText=`left:${cx}px;top:${cy}px;--dx:${Math.cos(a)*d}px;--dy:${Math.sin(a)*d*.7}px;font-size:${9+Math.random()*8}px;animation-delay:${Math.random()*80}ms`;document.body.appendChild(s);setTimeout(()=>s.remove(),1000)}}
 function closePop(){const p=document.getElementById("popOv");if(p){p.remove();return true}return false}
 function openPop(anchor,draw){closePop();const d=document.createElement("div");d.id="popOv";d.className="popOv";d.innerHTML=`<div class="popC" role="dialog" aria-modal="true"></div>`;document.body.appendChild(d);const c=d.firstChild;
   const wide=!matchMedia("(max-width:900px)").matches&&anchor;if(wide)d.classList.add("anch");draw(c);
   if(wide){const r=anchor.getBoundingClientRect(),w=c.offsetWidth;const mid=r.left+r.width/2;c.style.left=Math.round(Math.min(innerWidth-w-12,Math.max(12,mid>innerWidth/2?r.right-w:r.left)))+"px";c.style.top=Math.round(r.bottom+8)+"px"}
   d.addEventListener("click",e=>{if(e.target===d||e.target.closest("[data-popx]"))closePop()})}
-const popHead=t=>`<div class="popH"><strong>${t}</strong><button class="btn small ghost" data-popx aria-label="Fermer">✕</button></div>`;
+const popHead=(t,x="")=>`<div class="popH"><strong>${t}</strong>${x}<span class="popSp"></span><button class="btn small ghost" data-popx aria-label="Fermer">✕</button></div>`;
 function openSettings(btn){openPop(btn,c=>{
-  c.innerHTML=`${popHead(ICO.gear+" Réglages du tableau")}
+  const sl=saveLabel();c.innerHTML=`${popHead(ICO.gear+" Réglages",`<span class="savest${sl.includes("✓")?" ok":""}" id="savest">${esc(sl)}</span>`)}
   <label class="glabel" for="bname">Nom du tableau</label><input type="text" id="bname" value="${esc(S.name)}" maxlength="40" autocomplete="off">
   <label class="glabel" for="fsel">Taille du tableau</label><select id="fsel">${Object.entries(FORMATS).map(([k,f])=>`<option value="${k}" ${k===S.format?"selected":""}>${f.n}</option>`).join("")}</select>
   <p class="pophint">Tes photos et tes écritures restent : elles se replacent dans la nouvelle taille.</p>
+  <span class="glabel">Placement des photos</span><label class="tgl"><span><strong>Ajustement automatique</strong><small>Glisse une photo sur une autre : elles échangent leur place. Désactivé, tu poses la photo où tu veux, même par-dessus une autre.</small></span><input type="checkbox" id="autoSw" ${autoSwapOn()?"checked":""}><i aria-hidden="true"></i></label>
   <span class="glabel">Aide</span><button class="popI" id="guideBtn"><span class="pi">❓</span><span><strong>Revoir le guide du studio</strong><small>Toutes les étapes expliquées, en 1 minute</small></span></button>
   ${OWNER?`<button class="popI" id="dlBtn"><span class="pi">⬇</span><span><strong>Télécharger le tableau</strong></span></button>`:""}`;
   c.querySelector("#bname").oninput=e=>{S.name=e.target.value;scheduleSave()};
   c.querySelector("#fsel").onchange=e=>{closePop();setFormat(e.target.value)};
-  c.querySelector("#guideBtn").onclick=()=>{closePop();startTour()};
+  c.querySelector("#guideBtn").onclick=()=>{closePop();startTour()};c.querySelector("#autoSw").onchange=e=>lsSet("autoSwap",e.target.checked);
   const dl=c.querySelector("#dlBtn");if(dl)dl.onclick=()=>exportBoard(dl)})}
-function bankFor(av){const k=S.ageView;S.ageView=av;try{return bank()}finally{S.ageView=k}}
-function openFilters(btn){let av=S.ageView&&S.ageView!==S.age&&AGEV[S.ageView]?S.ageView:null;const ds=new Set((S.fdoms||[]).filter(d=>DOMS[d]));
-  let wv=S.womenView?{...S.womenView}:null;const wDef=()=>({a:{"3545":"35","4555":"45"}[S.age]||"",c:S.teint||"noire"});const canW=S.age!=="ado";
+function bankFor(avs){const k=S.ageView,k2=S.ageViews;S.ageView=null;S.ageViews=avs;try{return bank()}finally{S.ageView=k;S.ageViews=k2}}
+const ageViewsOn=()=>{const A=(S.ageViews||[]).filter(k=>AGEV[k]);return A.length===1&&A[0]===S.age?[]:A};
+function openFilters(btn){const avs=new Set(ageViewsOn().length?ageViewsOn():[S.age]);const ds=new Set((S.fdoms||[]).filter(d=>DOMS[d]));
+  let wv=S.womenView?{a:[].concat(S.womenView.a),c:[].concat(S.womenView.c)}:null;const wDef=()=>({a:[{"3545":"35","4555":"45"}[S.age]||""],c:[S.teint||"noire"]});const tog=(A,k)=>{const i=A.indexOf(k);if(i<0)A.push(k);else if(A.length>1)A.splice(i,1)};const canW=S.age!=="ado";
   const inD=(it,d)=>(it.d===d||it.x.includes(d))&&!(d==="sport"&&crossSex(it));
-  openPop(btn,function draw(c){const B=wv?womenFolderL(wv):bankFor(av);const n0=d=>B.filter(it=>inD(it,d)).length;
+  openPop(btn,function draw(c){const B=wv?womenFolderL(wv):bankFor([...avs]);const n0=d=>B.filter(it=>inD(it,d)).length;
     const doms=DORD.concat(Object.keys(DOMS).filter(k=>!DORD.includes(k))).filter(d=>n0(d)>0||ds.has(d));
     const n=ds.size?B.filter(it=>[...ds].some(d=>inD(it,d))).length:B.length;
     const ages=[[null,"Mon âge"+(AGEV[S.age]?" · "+AGEV[S.age][0]:"")],...Object.entries(AGEV).filter(([k])=>k!==S.age).map(([k,v])=>[k,v[0]])];
     const st=c.scrollTop;c.innerHTML=`${popHead(ICO.funnel+" Filtres")}
-    ${canW?`<span class="glabel">Filtre unique</span><div class="fopts"><button class="fo fu" data-u aria-pressed="${!!wv}">📁 ${wLabel()}<small>${S.sexe==="H"?"ta femme idéale":"ton homme idéal"}</small></button></div>
-    ${wv?`<div class="fsub"><span class="fsl">Âge</span><div class="fsopts">${WAGE.map(([k,l])=>`<button class="fs" data-wa="${k}" aria-pressed="${wv.a===k}">${l}</button>`).join("")}</div>
-      <span class="fsl">Teint</span><div class="fsopts">${WTEINT.map(([k])=>`<button class="fs" data-wc="${k}" aria-pressed="${wv.c===k}">${wTeint(k)}</button>`).join("")}</div></div>`:""}`:""}
-    ${wv?"":`<span class="glabel">Âge des personnes</span><div class="fopts">${ages.map(([k,l])=>`<button class="fo" data-av="${k||""}" aria-pressed="${av===k}">${l}</button>`).join("")}</div>`}
+    ${canW?`<span class="glabel">Filtre unique</span><div class="fopts"><button class="fo fu" data-u aria-pressed="${!!wv}"><i class="tw t1">✦</i><i class="tw t2">✦</i><i class="tw t3">✦</i>📁 ${wLabel()}<small>${S.sexe==="H"?"ta femme idéale":"ton homme idéal"}</small></button></div>
+    ${wv?`<div class="fsub"><span class="fsl">Âge</span><div class="fsopts">${WAGE.map(([k,l])=>`<button class="fs" data-wa="${k}" aria-pressed="${wv.a.includes(k)}">${l}</button>`).join("")}</div>
+      <span class="fsl">Teint</span><div class="fsopts">${WTEINT.map(([k])=>`<button class="fs" data-wc="${k}" aria-pressed="${wv.c.includes(k)}">${wTeint(k)}</button>`).join("")}</div></div>`:""}`:""}
+    ${wv?"":`<span class="glabel">Âge des personnes <small class="gsub">un ou plusieurs</small></span><div class="fopts">${ages.map(([k,l])=>`<button class="fo" data-av="${k||S.age}" aria-pressed="${avs.has(k||S.age)}">${l}</button>`).join("")}</div>`}
     <span class="glabel">Thèmes <small class="gsub">un ou plusieurs</small></span>${doms.length?`<div class="fopts">${doms.map(d=>`<button class="fo" data-d="${d}" aria-pressed="${ds.has(d)}">${DOMS[d]} <small>${n0(d)}</small></button>`).join("")}</div>`:`<p class="pophint">Pas encore de photos pour ce choix.</p>`}
     <div class="popF"><button class="btn small ghost" id="fRst">Tout effacer</button><button class="btn small" id="fOk">Voir ${n} image${n>1?"s":""}</button></div>`;c.scrollTop=st;
-    const u=c.querySelector(".fu");if(u)u.onclick=()=>{wv=wv?null:wDef();draw(c)};
-    c.querySelectorAll(".fs[data-wa]").forEach(b=>b.onclick=()=>{wv.a=b.dataset.wa;draw(c)});c.querySelectorAll(".fs[data-wc]").forEach(b=>b.onclick=()=>{wv.c=b.dataset.wc;draw(c)});
-    c.querySelectorAll(".fo[data-av]").forEach(b=>b.onclick=()=>{av=b.dataset.av||null;draw(c)});
+    const u=c.querySelector(".fu");if(u)u.onclick=()=>{const r=u.getBoundingClientRect();wv=wv?null:wDef();draw(c);if(wv)sparkBurst(r)};
+    c.querySelectorAll(".fs[data-wa]").forEach(b=>b.onclick=()=>{tog(wv.a,b.dataset.wa);draw(c)});c.querySelectorAll(".fs[data-wc]").forEach(b=>b.onclick=()=>{tog(wv.c,b.dataset.wc);draw(c)});
+    c.querySelectorAll(".fo[data-av]").forEach(b=>b.onclick=()=>{const k=b.dataset.av;if(avs.has(k)){if(avs.size>1)avs.delete(k)}else avs.add(k);draw(c)});
     c.querySelectorAll(".fo[data-d]").forEach(b=>b.onclick=()=>{const d=b.dataset.d;if(ds.has(d))ds.delete(d);else ds.add(d);draw(c)});
-    c.querySelector("#fRst").onclick=()=>{av=null;wv=null;ds.clear();draw(c)};
-    c.querySelector("#fOk").onclick=()=>{S.womenView=wv;S.ageView=wv?null:av;S.fdoms=[...ds];S.q="";S.filter="all";closePop();renderTools();const tb=document.querySelector("#tools .tbody");if(tb)tb.scrollTop=0}})}
+    c.querySelector("#fRst").onclick=()=>{avs.clear();avs.add(S.age);wv=null;ds.clear();draw(c)};
+    c.querySelector("#fOk").onclick=()=>{S.womenView=wv;S.ageView=null;S.ageViews=wv?[]:[...avs].filter(k=>!(avs.size===1&&k===S.age));S.fdoms=[...ds];S.q="";S.filter="all";closePop();renderTools();const tb=document.querySelector("#tools .tbody");if(tb)tb.scrollTop=0}})}
 function closeOverlay(){if(closePop())return true;const z=document.querySelector(".zoomOv");if(z){z.remove();return true}const m=document.getElementById("menuOv");if(m){m.remove();return true}
   const L=document.getElementById("layer");if(L&&L.innerHTML.trim()){L.innerHTML="";return true}if(S.tourI!=null){endTour();return true}return false}
 window.addEventListener("popstate",e=>{if(closeOverlay()){try{history.pushState({vb:1,step:S.step,page:S.page||null},"")}catch(x){}return}
@@ -2053,7 +2099,7 @@ function render(){
     <div class="nav"><span></span><div class="opts">${S.boardId?`<button class="btn ghost" id="newb">Commencer un nouveau tableau</button><button class="btn" id="next">Continuer mon tableau ✦</button>`:`<button class="btn" id="newb">Entrer dans le studio ✦</button>`}</div></div></section>`;
   } else if(S.step===1){
     h=`<div class="studio"><section class="card tools" id="tools"></section><section class="stage">
-    <div class="toolbar"><button class="btn small ghost" id="undoBtn" title="Annuler (Ctrl+Z)">↶<span class="lbl"> Annuler</span></button><button class="btn small ghost" id="redoBtn" title="Rétablir (Ctrl+Y)">↷<span class="lbl"> Rétablir</span></button><span class="zoom"><button class="btn small ghost" id="zout" aria-label="Dézoomer">−</button><span id="zval">100 %</span><button class="btn small ghost" id="zin" aria-label="Zoomer">+</button></span><button class="btn small" id="panBtn" hidden></button><button class="btn small" id="magicTop">✨ Arranger</button><span class="tsp"></span><span class="savest" id="savest"></span><button class="btn small" id="keepBtn" ${S.keep?"hidden":""} title="Garder ce tableau dans Mes tableaux">💾<span class="lbl"> Enregistrer</span></button>${ISADMIN?`<button class="btn small ghost" id="tplBtn" title="Le mettre dans la page Modèles, visible par toutes">${TPLIDS.has(S.boardId)?"★ Retirer des modèles":"☆ Publier comme modèle"}</button>`:""}<button class="btn small ghost setb" id="setBtn" aria-haspopup="dialog" title="Réglages du tableau : nom, taille, guide">${ICO.gear}<span class="lbl"> Réglages</span></button></div>
+    <div class="toolbar"><button class="btn small ghost" id="undoBtn" title="Annuler (Ctrl+Z)">↶<span class="lbl"> Annuler</span></button><button class="btn small ghost" id="redoBtn" title="Rétablir (Ctrl+Y)">↷<span class="lbl"> Rétablir</span></button><span class="zoom"><button class="btn small ghost" id="zout" aria-label="Dézoomer">−</button><span id="zval">100 %</span><button class="btn small ghost" id="zin" aria-label="Zoomer">+</button></span><button class="btn small" id="panBtn" hidden></button><button class="btn small" id="magicTop">✨ Arranger</button><span class="tsp"></span><button class="btn small" id="keepBtn" ${S.keep?"hidden":""} title="Garder ce tableau dans Mes tableaux">💾<span class="lbl"> Enregistrer</span></button>${ISADMIN?`<button class="btn small ghost" id="tplBtn" title="Le mettre dans la page Modèles, visible par toutes">${TPLIDS.has(S.boardId)?"★ Retirer des modèles":"☆ Publier comme modèle"}</button>`:""}<button class="btn small ghost setb" id="setBtn" aria-haspopup="dialog" title="Réglages du tableau : nom, taille, guide">${ICO.gear}<span class="lbl"> Réglages</span></button></div>
     <div class="selbar" id="selbar"></div><div class="boardWrap" id="boardHost"></div>
     <div class="opts stagebtns" style="justify-content:center"><button class="btn" id="magic">✨ Arranger mon tableau</button><button class="btn ghost" id="shake">Secouer le moodboard</button><button class="btn" id="toPrev">Voir en situation →</button></div></section></div>`;
   } else if(S.step===2){
