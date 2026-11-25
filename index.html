@@ -516,14 +516,22 @@ canvas#fx{position:fixed;inset:0;width:100%;height:100%;z-index:80;pointer-event
   body.imgTab:not(.sheetMinB) .tools{height:48vh}
   body.imgTab .boardWrap{--vh:calc(56vh - 150px)}
   body.imgTab.sheetMinB .boardWrap{--vh:calc(100vh - 230px)}
-  /* poignée : on peut glisser la barre des onglets vers le bas / le haut */
-  .tools::before{content:"";display:block;flex:none;width:44px;height:5px;border-radius:3px;background:#d9c7b6;margin:-2px auto 2px}
-  .tools .tabs{touch-action:pan-x}
   /* styles d'écriture sur une ligne qui défile */
   .tools .styles{display:flex;overflow-x:auto;gap:6px;padding-bottom:3px}
   .tools .styles .style{flex:0 0 118px}
   /* « Supprimer » en premier dans la barre de l'élément choisi */
   .selbar [data-a="del"]{order:-1}
+}
+/* poignée du panneau (téléphone) : hauteur réglable au doigt (--sheetH) */
+.grab{display:none}
+@media (max-width:900px){
+  .grab{display:flex;flex:none;justify-content:center;align-items:center;height:26px;margin:-8px -14px 0;touch-action:none;cursor:grab;-webkit-user-select:none;user-select:none}
+  .grab i{display:block;width:48px;height:6px;border-radius:3px;background:#cbb6a3}
+  .tools,body.imgTab:not(.sheetMinB) .tools{height:var(--sheetH,48vh)}
+  .tools.min{height:auto}
+  .boardWrap,body.imgTab .boardWrap{--vh:calc(104vh - var(--sheetH,48vh) - 150px)}
+  body.sheetMinB .boardWrap,body.imgTab.sheetMinB .boardWrap{--vh:calc(100vh - 230px)}
+  body.sheetDrag .tools{transition:none}
 }
 </style>
 </head>
@@ -1473,7 +1481,7 @@ function miniModel(m){const ar=AR();const L=buildM(m,ar,nbFor(m));const light=!D
 function renderTools(){
   const T=document.getElementById("tools");if(!T)return;
   const tabs=[["modeles","Modèles"],["images","Images"],["stickers","Stickers"],["textes","Écritures"],["magie","Magie"]];
-  const tabsH=`<div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button class="tab" role="tab" data-t="${k}" aria-selected="${S.tab===k}">${l}</button>`).join("")}<button class="tab sheetT" id="sheetT" aria-label="${S.sheetMin?"Ouvrir le panneau":"Réduire le panneau"}">${S.sheetMin?"▴":"▾"}</button></div>`;
+  const tabsH=`<div class="grab" id="grab" title="Glisse pour agrandir ou réduire"><i></i></div><div class="tabs" role="tablist">${tabs.map(([k,l])=>`<button class="tab" role="tab" data-t="${k}" aria-selected="${S.tab===k}">${l}</button>`).join("")}<button class="tab sheetT" id="sheetT" aria-label="${S.sheetMin?"Ouvrir le panneau":"Réduire le panneau"}">${S.sheetMin?"▴":"▾"}</button></div>`;
   const prev=T.querySelector(".tbody");const keep=prev&&T.dataset.tab===S.tab?prev.scrollTop:0;
   let h="",fixedH="";
   if(S.tab==="images"){
@@ -1517,12 +1525,20 @@ function renderTools(){
     <span class="glabel">Roue de la sagesse</span><p class="lead" style="font-size:12px">Plus d'idée ? Le moodboard se réorganise tout seul en collage artistique.</p><button class="btn" id="shake2">Secouer le moodboard</button>
     <span class="glabel">Vision en mouvement</span><p class="lead" style="font-size:12px">Sélectionne une photo clé sur le tableau puis touche « Faire scintiller ».</p>`;
   }
-  document.body.classList.toggle("imgTab",S.tab==="images");T.innerHTML=tabsH+(fixedH?`<div class="fixedc">${fixedH}</div>`:"")+`<div class="tbody">${h}</div>`;T.dataset.tab=S.tab;T.classList.toggle("min",!!S.sheetMin);document.body.classList.toggle("sheetMinB",!!S.sheetMin);
+  document.body.classList.toggle("imgTab",S.tab==="images");T.innerHTML=tabsH+(fixedH?`<div class="fixedc">${fixedH}</div>`:"")+`<div class="tbody">${h}</div>`;T.dataset.tab=S.tab;T.classList.toggle("min",!!S.sheetMin);document.body.classList.toggle("sheetMinB",!!S.sheetMin);if(S.sheetH)document.body.style.setProperty("--sheetH",S.sheetH+"px");else document.body.style.removeProperty("--sheetH");
   T.querySelector(".tbody").scrollTop=keep;
   if(S.tab==="images"){const tb=T.querySelector(".tbody");let raf=0;tb.addEventListener("scroll",()=>{if(raf)return;raf=requestAnimationFrame(()=>{raf=0;const top=tb.getBoundingClientRect().top+8;let cur="all";T.querySelectorAll(".bsec[id]").forEach(sc=>{if(sc.getBoundingClientRect().top<=top)cur=sc.id.slice(4)});
     T.querySelectorAll(".fixedc .chip").forEach(c=>{const on=c.dataset.f===cur;if(c.getAttribute("aria-pressed")!==String(on)){c.setAttribute("aria-pressed",on);if(on){const row=c.parentElement;row.scrollTo({left:c.offsetLeft-row.offsetWidth/2+c.offsetWidth/2,behavior:"smooth"})}}})})})}
-  {const bar=T.querySelector(".tabs");let y0=null,x0=0;if(bar){bar.addEventListener("touchstart",e=>{y0=e.touches[0].clientY;x0=e.touches[0].clientX},{passive:true});
-    bar.addEventListener("touchend",e=>{if(y0==null)return;const t=e.changedTouches[0],dy=t.clientY-y0,dx=t.clientX-x0;y0=null;if(Math.abs(dy)<40||Math.abs(dy)<Math.abs(dx))return;const want=dy>0;if(!!S.sheetMin===want)return;S.sheetMin=want;S.sheetAuto=false;renderTools();requestAnimationFrame(applyView)},{passive:true})}}
+  /* poignée (téléphone) : le panneau suit le doigt ; relâché tout en bas il se range, sinon il garde la hauteur choisie.
+     Un simple toucher ne fait rien (la flèche ▾ / ▴ reste là pour ouvrir / fermer). */
+  {const gb=T.querySelector("#grab");if(gb)gb.onpointerdown=e=>{e.preventDefault();try{gb.setPointerCapture(e.pointerId)}catch(x){}
+    const y0=e.clientY,h0=T.getBoundingClientRect().height,maxH=innerHeight*.7;let moved=false;
+    const mv=ev=>{const dy=ev.clientY-y0;if(!moved&&Math.abs(dy)<6)return;if(!moved){moved=true;T.classList.remove("min");document.body.classList.remove("sheetMinB");document.body.classList.add("sheetDrag")}
+      const h=Math.max(70,Math.min(maxH,h0-dy));document.body.style.setProperty("--sheetH",h+"px");applyView()};
+    const up=()=>{gb.removeEventListener("pointermove",mv);gb.removeEventListener("pointerup",up);gb.removeEventListener("pointercancel",up);document.body.classList.remove("sheetDrag");
+      if(!moved)return;const h=parseFloat(getComputedStyle(document.body).getPropertyValue("--sheetH"))||0;
+      if(h<130){S.sheetMin=true;S.sheetH=null}else{S.sheetMin=false;S.sheetH=Math.round(h)}S.sheetAuto=false;renderTools();requestAnimationFrame(applyView)};
+    gb.addEventListener("pointermove",mv);gb.addEventListener("pointerup",up);gb.addEventListener("pointercancel",up)}}
   T.querySelector("#sheetT").onclick=()=>{S.sheetMin=!S.sheetMin;S.sheetAuto=false;renderTools();requestAnimationFrame(applyView)};
   T.querySelectorAll(".tab[data-t]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.t;S.sheetMin=false;renderTools()});
   const wf=T.querySelector("#wfold");if(wf)wf.onclick=()=>{S.womenView={a:{"3545":"35","4555":"45"}[S.age]||"",c:S.teint||"noire"};S.q="";renderTools();const tb=document.querySelector("#tools .tbody");if(tb)tb.scrollTop=0};
