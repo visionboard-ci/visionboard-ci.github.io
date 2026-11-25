@@ -1542,8 +1542,17 @@ function loadScript(u){return new Promise((res,rej)=>{const t=document.createEle
 let FBP=null;function fbLoad(){if(!FBP)FBP=fbLoad0().catch(e=>{FBP=null;throw e});return FBP}
 async function fbLoad0(){const v="10.14.1",b=`https://www.gstatic.com/firebasejs/${v}/`;await loadScript(b+"firebase-app-compat.js");await Promise.all([loadScript(b+"firebase-auth-compat.js"),loadScript(b+"firebase-firestore-compat.js")]);
   const app=firebase.apps.length?firebase.app():firebase.initializeApp(FBCFG);FB={auth:firebase.auth(),db:firebase.firestore()};FB.auth.languageCode="fr";return FB}
-function cldUpload(file,pid){if(!HOSTED||!CLD.cloud)return;const fd=new FormData();fd.append("file",file);fd.append("upload_preset",CLD.preset);if(CLD.folder)fd.append("folder",CLD.folder);
-  HDP[pid]=fetch(`https://api.cloudinary.com/v1_1/${CLD.cloud}/image/upload`,{method:"POST",body:fd}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.secure_url){HD[pid]=j.secure_url;return j.secure_url}return null}).catch(()=>null)}
+/* photo perso : avant l'envoi, on fabrique une copie propre (même image, 4 000 px max, JPEG 92 %) SANS les
+   informations cachées (position GPS, appareil, date). Si le navigateur ne sait pas lire le fichier (ex. HEIC
+   sur Android), on envoie l'original : Cloudinary le limite quand même à 4 000 px. */
+async function cleanPhoto(file){try{if(!/^image\/(jpeg|png|webp)$/.test(file.type)||!window.createImageBitmap)return file;
+  const bm=await createImageBitmap(file,{imageOrientation:"from-image"});const k=Math.min(1,4000/Math.max(bm.width,bm.height));
+  const c=document.createElement("canvas");c.width=Math.round(bm.width*k);c.height=Math.round(bm.height*k);
+  const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(bm,0,0,c.width,c.height);bm.close&&bm.close();
+  const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.92));return b||file}catch(e){return file}}
+function cldUpload(file,pid){if(!HOSTED||!CLD.cloud)return;
+  HDP[pid]=cleanPhoto(file).then(clean=>{const fd=new FormData();fd.append("file",clean);fd.append("upload_preset",CLD.preset);if(CLD.folder)fd.append("folder",CLD.folder);
+  return fetch(`https://api.cloudinary.com/v1_1/${CLD.cloud}/image/upload`,{method:"POST",body:fd})}).then(r=>r.ok?r.json():null).then(j=>{if(j&&j.secure_url){HD[pid]=j.secure_url;return j.secure_url}return null}).catch(()=>null)}
 const hdThumb=(u,w)=>u.replace("/upload/",`/upload/c_limit,w_${w},q_auto,f_jpg/`);
 async function fbAfterLogin(user){FBUSER=user;DB=FB.db;USERID=user.uid;ISADMIN=user.email===ADMIN_EMAIL&&user.emailVerified;if(ISADMIN){OWNER=true;loadTpls().then(()=>{if(S.page==="boards"||S.page==="galerie")render()})}
   const local=lsGet("boards")||[];
