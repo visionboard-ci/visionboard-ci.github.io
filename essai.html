@@ -17,8 +17,8 @@
 <meta property="og:image:alt" content="Vision boards personnalisés · L'Atelier de Lumière">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="color-scheme" content="light dark">
-<meta name="theme-color" content="#F4ECE1" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#161117" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F4ECE1" id="themeC">
+<script>/* thème avant l'affichage : Automatique (suit le téléphone), Clair ou Sombre */(function(){var p="auto";try{p=JSON.parse(localStorage.getItem("atelier_theme"))||"auto"}catch(e){}var d=p==="dark"||(p!=="light"&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches);var h=document.documentElement;h.classList.toggle("dark",d);h.style.colorScheme=d?"dark":"light";var m=document.getElementById("themeC");if(m)m.content=d?"#161117":"#F4ECE1"})()</script>
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
@@ -678,58 +678,65 @@ canvas#fx{position:fixed;inset:0;width:100%;height:100%;z-index:80;pointer-event
 
 /* petits titres dorés : un doré un peu plus foncé pour rester lisible sur fond clair (le mode sombre a le sien) */
 .glabel,.menuT{color:#94692A}
-@media (prefers-color-scheme:dark){.glabel,.menuT{color:var(--gold)}}
+html.dark .glabel,html.dark .menuT{color:var(--gold)}
 /* ===== MODE SOMBRE (téléphone ou ordinateur réglé en sombre) =====
    Seule l'interface change. Le tableau garde ses vraies couleurs (celles de l'impression). */
-@media (prefers-color-scheme:dark){
-  :root{color-scheme:dark;--night:#171219;--night2:#1F1922;--panel:rgba(42,33,45,.9);--panel2:rgba(255,225,190,.1);--line:rgba(235,205,175,.2);
+/* thème sombre : classe « dark » posée sur <html> (réglages du site : Automatique / Clair / Sombre) */
+  html.dark{color-scheme:dark;--night:#171219;--night2:#1F1922;--panel:rgba(42,33,45,.9);--panel2:rgba(255,225,190,.1);--line:rgba(235,205,175,.2);
     --ink:#F3EAE2;--muted:#BBA9B0;--gold:#DDB06B;--gold2:#EDB96F;--veil:24,19,27;--surf:#211A24;--surf2:#2D2431}
-  html{background:#161117}
-  body{background:radial-gradient(1100px 650px at 50% -12%,#2C2131 0%,#1D171F 45%,#151016 100%) fixed;color:var(--ink)}
+  html.dark{background:#161117}
+  html.dark body{background:radial-gradient(1100px 650px at 50% -12%,#2C2131 0%,#1D171F 45%,#151016 100%) fixed;color:var(--ink)}
   /* le tableau et ses aperçus gardent les couleurs claires d'origine */
-  .board,.room,.faceview,.phone .scr,.laptop .lid{--ink:#2F2329;--muted:#7D6A70;--line:rgba(150,110,80,.2);--panel:rgba(255,253,249,.72);--panel2:rgba(120,84,64,.08);--gold:#B98A45;--gold2:#B7772F;color-scheme:light}
+  html.dark .board,html.dark .room,html.dark .faceview,html.dark .phone .scr,html.dark .laptop .lid{--ink:#2F2329;--muted:#7D6A70;--line:rgba(150,110,80,.2);--panel:rgba(255,253,249,.72);--panel2:rgba(120,84,64,.08);--gold:#B98A45;--gold2:#B7772F;color-scheme:light}
   /* surfaces : fenêtres, panneau d'outils, menu */
-  .tools,.popC,.popF,.menuP,.modal .card,.zoomBox,.authBox{background:var(--surf);color:var(--ink)}
-  .menuP{box-shadow:10px 0 40px rgba(0,0,0,.5)}
-  .card{background:var(--panel)}
-  .bhead{background:#2A2130;color:var(--gold)}
-  .wacard{background:#2A2130}
-  .surm{background:#2E2520}
+  html.dark .tools,html.dark .popC,html.dark .popF,html.dark .menuP,html.dark .modal .card,html.dark .zoomBox,html.dark .authBox{background:var(--surf);color:var(--ink)}
+  html.dark .menuP{box-shadow:10px 0 40px rgba(0,0,0,.5)}
+  html.dark .card{background:var(--panel)}
+  html.dark .bhead{background:#2A2130;color:var(--gold)}
+  html.dark .wacard{background:#2A2130}
+  html.dark .surm{background:#2E2520}
   /* éléments blancs → cartes sombres */
-  .popI,.pjI,.fo,.fs,.fclr,.tgl,.menuI,.menuS,.wfold,.faq details,.spt,.zoomBar .zb,.btn.danger{background:var(--surf2);color:var(--ink)}
-  .pjCur{background:rgba(221,176,107,.14)}
-  .fpill{background:#3A2E3D;color:var(--ink)}.fpu{background:#3D2F46}
-  .fo[aria-pressed="true"],.fs[aria-pressed="true"]{background:var(--ink);color:#1D171F;border-color:var(--ink)}
-  .fo[aria-pressed="true"] small{color:rgba(29,23,31,.65)}
-  .fsub{background:rgba(255,255,255,.04);border-left-color:var(--gold)}
-  .fo.fu{background:linear-gradient(var(--surf2),var(--surf2)) padding-box,linear-gradient(115deg,#E9C46A,#F4B6C2,#B98A45,#F7C6A3,#E9C46A) border-box;background-size:100% 100%,300% 100%}
-  .fo.fu[aria-pressed="true"]{background:linear-gradient(115deg,#5A3D4C,#7A5263) padding-box,linear-gradient(115deg,#E9C46A,#F4B6C2,#B98A45,#F7C6A3,#E9C46A) border-box;background-size:100% 100%,300% 100%;color:#fff}
-  .tgl i{background:#4A3F4D}
-  .btn.danger{color:#FF9C92;border-color:rgba(255,156,146,.45)}.btn.danger:hover{background:#3A2426}.btn.danger.sure{background:#C8362B;color:#fff;border-color:#C8362B}
-  .gdanger{color:#FF9C92!important}
-  .popH .savest.ok{color:#6FD39A}.savest.ok{color:#6FD39A}
+  html.dark .popI,html.dark .pjI,html.dark .fo,html.dark .fs,html.dark .fclr,html.dark .tgl,html.dark .menuI,html.dark .menuS,html.dark .wfold,html.dark .faq details,html.dark .spt,html.dark .zoomBar .zb,html.dark .btn.danger{background:var(--surf2);color:var(--ink)}
+  html.dark .pjCur{background:rgba(221,176,107,.14)}
+  html.dark .fpill{background:#3A2E3D;color:var(--ink)}
+  html.dark .fpu{background:#3D2F46}
+  html.dark .fo[aria-pressed="true"],html.dark .fs[aria-pressed="true"]{background:var(--ink);color:#1D171F;border-color:var(--ink)}
+  html.dark .fo[aria-pressed="true"] small{color:rgba(29,23,31,.65)}
+  html.dark .fsub{background:rgba(255,255,255,.04);border-left-color:var(--gold)}
+  html.dark .fo.fu{background:linear-gradient(var(--surf2),var(--surf2)) padding-box,linear-gradient(115deg,#E9C46A,#F4B6C2,#B98A45,#F7C6A3,#E9C46A) border-box;background-size:100% 100%,300% 100%}
+  html.dark .fo.fu[aria-pressed="true"]{background:linear-gradient(115deg,#5A3D4C,#7A5263) padding-box,linear-gradient(115deg,#E9C46A,#F4B6C2,#B98A45,#F7C6A3,#E9C46A) border-box;background-size:100% 100%,300% 100%;color:#fff}
+  html.dark .tgl i{background:#4A3F4D}
+  html.dark .btn.danger{color:#FF9C92;border-color:rgba(255,156,146,.45)}
+  html.dark .btn.danger:hover{background:#3A2426}
+  html.dark .btn.danger.sure{background:#C8362B;color:#fff;border-color:#C8362B}
+  html.dark .gdanger{color:#FF9C92!important}
+  html.dark .popH .savest.ok{color:#6FD39A}
+  html.dark .savest.ok{color:#6FD39A}
   /* champs de saisie */
-  input[type=text],input[type=tel],input[type=email],input[type=password],select,textarea,.ideaF textarea,.ideaF input[type=email],.ted textarea{background:#2A222D;color:var(--ink);border-color:var(--line)}
-  input::placeholder,textarea::placeholder{color:#9C8B92}
-  select option{background:#2A222D;color:var(--ink)}
+  html.dark input[type=text],html.dark input[type=tel],html.dark input[type=email],html.dark input[type=password],html.dark select,html.dark textarea,html.dark .ideaF textarea,html.dark .ideaF input[type=email],html.dark .ted textarea{background:#2A222D;color:var(--ink);border-color:var(--line)}
+  html.dark input::placeholder,html.dark textarea::placeholder{color:#9C8B92}
+  html.dark select option{background:#2A222D;color:var(--ink)}
   /* boutons clairs (outils) et segments */
-  .btn.ghost{background:var(--panel);color:var(--ink)}
-  .studio .btn:not(.ghost):not(.go):not(.danger):not(#brush):not(#panBtn){background:var(--panel);color:var(--ink)}
-  .seg{background:rgba(255,255,255,.05)}
-  .afold[aria-pressed="true"]{color:#2E1D25}
+  html.dark .btn.ghost{background:var(--panel);color:var(--ink)}
+  html.dark .studio .btn:not(.ghost):not(.go):not(.danger):not(#brush):not(#panBtn){background:var(--panel);color:var(--ink)}
+  html.dark .seg{background:rgba(255,255,255,.05)}
+  html.dark .afold[aria-pressed="true"]{color:#2E1D25}
   /* guide (bulles du tutoriel) */
-  #tourL .tbub{background:#2A2130;color:var(--ink)}#tourL .tbub p{color:#D6C6CC}#tourL .tchips i{background:#3A2E3D;color:var(--ink)}
-  #tourL .tskip{color:#B8A6AD}#tourL .tprev{background:#3A2E3D;color:var(--ink)}
+  html.dark #tourL .tbub{background:#2A2130;color:var(--ink)}
+  html.dark #tourL .tbub p{color:#D6C6CC}
+  html.dark #tourL .tchips i{background:#3A2E3D;color:var(--ink)}
+  html.dark #tourL .tskip{color:#B8A6AD}
+  html.dark #tourL .tprev{background:#3A2E3D;color:var(--ink)}
   /* écran final (Ton année est illuminée) */
-  .final{background:radial-gradient(circle at 50% 40%,#2E2333,#151016 75%)}
+  html.dark .final{background:radial-gradient(circle at 50% 40%,#2E2333,#151016 75%)}
   /* aperçus de ce qui sera posé sur le tableau (écritures, dessins) : sur fond papier clair, comme à l'impression */
-  .stk{background:#F4ECE3;border-color:rgba(235,205,175,.35)}
-  .stk:hover{border-color:var(--gold)}
-  .fo.fu[aria-pressed="true"] small{color:rgba(255,255,255,.78)}
-  .supic rect{stroke:var(--ink)}
+  html.dark .stk{background:#F4ECE3;border-color:rgba(235,205,175,.35)}
+  html.dark .stk:hover{border-color:var(--gold)}
+  html.dark .fo.fu[aria-pressed="true"] small{color:rgba(255,255,255,.78)}
+  html.dark .supic rect{stroke:var(--ink)}
   /* Google : bouton de marque, reste blanc */
-  .gbtn{background:#fff!important;color:#2F2329!important}
-}
+  html.dark .gbtn{background:#fff!important;color:#2F2329!important}
+
 
 /* pas de lueur autour des boutons clairs (outils) : coupée au bord des rangées qui défilent, elle faisait un rectangle éclairé */
 .btn.ghost,.studio .btn:not(.go):not(#brush),.btn.danger{box-shadow:none}
@@ -737,6 +744,24 @@ canvas#fx{position:fixed;inset:0;width:100%;height:100%;z-index:80;pointer-event
 .toolbar .btn.go,.selbar .btn,.acts .btn{box-shadow:0 2px 6px rgba(183,119,47,.18)}
 /* voile des onglets d'étapes : bords gauche et droit fondus, sans arête */
 .steps{border-radius:0;-webkit-mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);mask-image:linear-gradient(to right,transparent 0,#000 18px,#000 calc(100% - 18px),transparent 100%);padding-left:14px;padding-right:14px}
+
+/* ===== menu : réglages du site (⚙ en haut, discret) ===== */
+.menuH{gap:8px}.menuH strong{flex:1}
+.setG{padding:6px 9px;color:var(--muted)}.setG .ico{width:18px;height:18px}
+.setRow{display:flex;align-items:center;gap:10px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.setTx{flex:1;display:flex;flex-direction:column;gap:2px;font-size:13px;min-width:0}.setTx strong{font-size:14px;overflow:hidden;text-overflow:ellipsis}.setTx small{color:var(--muted);font-size:12px}
+.thSeg{margin:0}.thSeg .segb[aria-pressed="true"]{background:var(--panel);border-color:var(--gold)}
+.setHint{font-size:11.5px;color:var(--muted);margin:-2px 2px 0}
+.setFoot{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line)}
+.setLink{background:none;border:0;font:inherit;font-size:13px;color:var(--muted);text-align:left;padding:8px 2px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+.setLink:hover{color:var(--ink)}
+/* page Aide & infos */
+.hub{display:flex;flex-direction:column;gap:8px}
+.hubI{border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden}
+.hubI>summary{list-style:none;cursor:pointer;padding:12px 14px;font-weight:600;display:flex;align-items:center;gap:10px}
+.hubI>summary::-webkit-details-marker{display:none}
+.hubI>summary::after{content:"›";margin-left:auto;color:var(--muted);transition:transform .2s}.hubI[open]>summary::after{transform:rotate(90deg)}
+.hubB{padding:0 14px 14px}.hubB .info h3:first-child{margin-top:0}
 </style>
 </head>
 <body><div style="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:200;background:#B7772F;color:#fff;font:600 11px/1 Poppins,system-ui,sans-serif;padding:4px 10px;border-radius:99px;pointer-events:none;letter-spacing:.08em;opacity:.9">VERSION D'ESSAI</div>
@@ -2152,13 +2177,27 @@ const opt=(k,v,l,x="")=>`<button class="opt" data-k="${k}" data-v="${v}" aria-pr
 const fmtIcon=ar=>{const w=40*Math.sqrt(ar),h=40/Math.sqrt(ar);const k=Math.min(1,46/w,46/h);return`<span class="ic"><i style="width:${w*k}px;height:${h*k}px"></i></span>`};
 function openPage(p){if(S.tourI!=null)endTour();document.getElementById("layer").innerHTML="";closeMenu();if(p==="atelier"){if(S.boardId){go(1)}else{go(0);openProjects()}return}if(p==="new"){go(0);openProjects("new");return}if(p==="galerie"&&TPL===null)loadTpls().then(()=>{if(S.page==="galerie")render()});S.page=p;document.body.classList.remove("studioOn");render();window.scrollTo({top:0});navPush()}
 function closeMenu(){const m=document.getElementById("menuOv");if(m)m.remove()}
-function openMenu(){closeMenu();const items=[["atelier","🎨","Mon atelier",S.boardId?"Continuer mon tableau":"Entrer dans le studio"],["boards","🖼️","Mes tableaux",S.saved.length+" tableau"+(S.saved.length>1?"x":"")],["orders","📦","Mes commandes",(S.orders||[]).length?(S.orders.length+" commande"+(S.orders.length>1?"s":"")):"Aucune pour l'instant"],["profil","👤","Mon profil","Toi, ton teint, ton âge, tes coordonnées"],["galerie","✨","Modèles","Des tableaux déjà composés à personnaliser"],["new","➕","Nouveau tableau","Commencer un tableau vierge"],...(ISADMIN?[["admin","🛠️","Commandes clientes","Espace administratrice"]]:[])];
-  const infos=[["idees","💡","Boîte à idées"],["aide","❓","Aide"],["livraison","🚚","Livraison"],["paiement","💳","Paiement"],["faq","💬","Questions fréquentes"],["apropos","🌟","À propos"],["contact","📞","Contact"],["conditions","📄","Conditions de vente"],["confidentialite","🔒","Confidentialité"]];
-  const d=document.createElement("div");d.id="menuOv";d.className="menuOv";d.innerHTML=`<nav class="menuP" aria-label="Menu"><div class="menuH"><strong>visionboard-ci.com</strong><button class="btn small ghost" id="menuX" aria-label="Fermer le menu">✕</button></div>
-  <section class="menuSec"><span class="menuT">Mon espace</span>${items.map(([k,ic,t,sub])=>`<button class="menuI${S.page===k?" on":""}" data-mp="${k}"><span class="mic" aria-hidden="true">${ic}</span><span><strong>${t}</strong><small>${esc(sub)}</small></span></button>`).join("")}</section>
-  <section class="menuSec menuInfo"><span class="menuT">Infos</span><div class="menuL">${infos.map(([k,ic,t])=>`<button class="menuS${S.page===k?" on":""}" data-mp="${k}"><span class="mic" aria-hidden="true">${ic}</span>${t}</button>`).join("")}</div></section>
-  <div class="menuWa">${waCard()}</div></nav>`;
-  document.body.appendChild(d);d.onclick=e=>{if(e.target===d)closeMenu()};d.querySelector("#menuX").onclick=closeMenu;d.querySelectorAll("[data-mp]").forEach(b=>b.onclick=()=>openPage(b.dataset.mp));const f=d.querySelector(".menuI");if(f)f.focus()}
+function openMenu(view){closeMenu();const items=[["profil","👤","Mon profil","Toi, ton teint, ton âge, tes coordonnées"],["boards","🖼️","Mes tableaux",S.saved.length+" tableau"+(S.saved.length>1?"x":"")],["orders","📦","Mes commandes",(S.orders||[]).length?(S.orders.length+" commande"+(S.orders.length>1?"s":"")):"Aucune pour l'instant"],["galerie","✨","Modèles","Des tableaux déjà composés à personnaliser"],...(ISADMIN?[["admin","🛠️","Commandes clientes","Espace administratrice"]]:[])];
+  const d=document.createElement("div");d.id="menuOv";d.className="menuOv";d.innerHTML=`<nav class="menuP" aria-label="Menu"></nav>`;document.body.appendChild(d);const P=d.firstChild;
+  const draw=v=>{
+    if(v==="reglages"){const th=themePref();
+      P.innerHTML=`<div class="menuH"><button class="btn small ghost" id="menuBk" aria-label="Retour au menu">‹</button><strong>Réglages</strong><button class="btn small ghost" id="menuX" aria-label="Fermer le menu">✕</button></div>
+      <section class="menuSec"><span class="menuT">Mon compte</span><div class="setRow">${!HOSTED?`<span class="setTx">Le compte est disponible sur visionboard-ci.com.</span>`:FBUSER?`<span class="setTx"><strong>${esc(FBUSER.displayName||FBUSER.email||"Mon compte")}</strong><small>${ISADMIN?"Administratrice · ":""}Tes tableaux sont gardés dans ton compte</small></span><button class="btn small ghost" id="stOut">Se déconnecter</button>`:`<span class="setTx"><strong>Pas connectée</strong><small>Tes tableaux sont gardés sur cet appareil</small></span><button class="btn small go" id="stIn">Se connecter</button>`}</div></section>
+      <section class="menuSec"><span class="menuT">Apparence</span><div class="seg thSeg" role="radiogroup" aria-label="Apparence">${[["auto","Automatique"],["light","Clair"],["dark","Sombre"]].map(([k,l])=>`<button class="segb" role="radio" data-th="${k}" aria-pressed="${th===k}" aria-checked="${th===k}">${l}</button>`).join("")}</div><small class="setHint">Automatique : comme ton téléphone ou ton ordinateur.</small></section>
+      <div class="menuWa setFoot"><button class="setLink" id="stInfo">Aide & infos <span aria-hidden="true">›</span></button><button class="setLink" data-mp="idees">Boîte à idées <span aria-hidden="true">›</span></button></div>`;
+      P.querySelector("#menuBk").onclick=()=>draw("");P.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>{setTheme(b.dataset.th);draw("reglages")});
+      const si=P.querySelector("#stIn");if(si)si.onclick=()=>{closeMenu();loginModal()};const so=P.querySelector("#stOut");if(so)so.onclick=async()=>{await FB.auth.signOut();location.reload()};
+      P.querySelector("#stInfo").onclick=()=>openPage("infos")}
+    else{P.innerHTML=`<div class="menuH"><strong>visionboard-ci.com</strong><button class="btn small ghost setG" id="menuSet" aria-label="Réglages du site" title="Réglages : compte, apparence, aide">${ICO.gear}</button><button class="btn small ghost" id="menuX" aria-label="Fermer le menu">✕</button></div>
+      <section class="menuSec"><span class="menuT">Mon espace</span>${items.map(([k,ic,t,sub])=>`<button class="menuI${S.page===k?" on":""}" data-mp="${k}"><span class="mic" aria-hidden="true">${ic}</span><span><strong>${t}</strong><small>${esc(sub)}</small></span></button>`).join("")}</section>
+      <div class="menuWa">${waCard()}</div>`;P.querySelector("#menuSet").onclick=()=>draw("reglages")}
+    P.querySelector("#menuX").onclick=closeMenu;P.querySelectorAll("[data-mp]").forEach(b=>b.onclick=()=>openPage(b.dataset.mp));const f=P.querySelector(".menuI,.segb");if(f)f.focus()};
+  d.onclick=e=>{if(e.target===d)closeMenu()};draw(view||"")}
+/* ===== apparence : Automatique (suit le téléphone) / Clair / Sombre — gardé sur l'appareil ===== */
+const themePref=()=>{const v=lsGet("theme");return v==="light"||v==="dark"?v:"auto"};
+function applyTheme(){const p=themePref();const d=p==="dark"||(p==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);const h=document.documentElement;h.classList.toggle("dark",d);h.style.colorScheme=d?"dark":"light";const m=document.getElementById("themeC");if(m)m.content=d?"#161117":"#F4ECE1"}
+function setTheme(p){lsSet("theme",p);applyTheme()}
+try{matchMedia("(prefers-color-scheme: dark)").addEventListener("change",applyTheme)}catch(e){}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){closeMenu();closePop()}});
 function saveProfile(){lsSet("profile",{sexe:S.sexe,teint:S.teint,hair:S.hair,age:S.age,nom:S.nom,tel:S.tel,ville:S.ville})}
 function pageHTML(){
@@ -2173,6 +2212,10 @@ function pageHTML(){
     <span class="glabel">Mon âge</span><div class="opts">${opt("age","2035","20 – 35 ans")}${opt("age","3545","35 – 45 ans")}${opt("age","4555","45 – 55 ans")}${opt("age","ado","Ado 12 – 20 ans")}</div>
     <span class="glabel">Mes coordonnées</span><div class="fields"><label class="fl">Nom<input type="text" id="pnom" value="${esc(S.nom)}" autocomplete="name"></label><label class="fl">Téléphone<input type="tel" id="ptel" value="${esc(S.tel)}" autocomplete="tel"></label><label class="fl">Ville / commune<input type="text" id="pville" value="${esc(S.ville)}"></label></div>
     <p class="ok" id="psaved" hidden>Profil enregistré ✓</p></section>`;
+  if(S.page==="infos"){const L=[["aide","❓","Aide : créer ton tableau"],["faq","💬","Questions fréquentes"],["livraison","🚚","Livraison"],["paiement","💳","Paiement"],["contact","📞","Contact"],["apropos","🌟","À propos"],["conditions","📄","Conditions de vente"],["confidentialite","🔒","Confidentialité"]];
+    const part=k=>{const keep=S.page;S.page=k;let h="";try{h=pageHTML()}finally{S.page=keep}return h.replace(/^<section class="card"><h2>.*?<\/h2>/s,"").replace(/<\/section>\s*$/,"").replace(/<div class="wacard">[\s\S]*?<\/div>\s*$/,"")};
+    return `<section class="card"><h2>Aide & infos</h2><p class="lead">Tout ce qu'il faut savoir, au même endroit. Touche un sujet pour l'ouvrir.</p><div class="hub">${L.map(([k,ic,t])=>`<details class="hubI" id="hub-${k}"><summary><span class="mic" aria-hidden="true">${ic}</span>${t}</summary><div class="hubB">${part(k)}</div></details>`).join("")}</div>
+    <button class="setLink" data-page="idees" style="align-self:flex-start">💡 Une idée d'image ? Boîte à idées <span aria-hidden="true">›</span></button>${waCard()}</section>`}
   if(S.page==="idees")return `<section class="card"><h2>Boîte à idées ✨</h2><p class="lead">Tu aimerais voir d'autres styles d'images dans l'atelier ? Un thème, une ambiance, un rêve qui manque ? Dis-nous tout. C'est anonyme : on ne sait pas qui écrit.</p>
     <form id="ideaF" class="ideaF" name="suggestions" method="POST" data-netlify="true" netlify-honeypot="site_web"><input type="hidden" name="form-name" value="suggestions"><p hidden><label>Ne pas remplir <input name="site_web"></label></p>
     <label class="fl">Ton idée<textarea name="idee" id="ideeT" required maxlength="1500" placeholder="Par exemple : plus d'images de voyage au Japon, des couples âgés, une ambiance bohème…"></textarea></label>
