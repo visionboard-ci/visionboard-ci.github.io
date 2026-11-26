@@ -762,6 +762,64 @@ html.dark .glabel,html.dark .menuT{color:var(--gold)}
 .hubI>summary::-webkit-details-marker{display:none}
 .hubI>summary::after{content:"›";margin-left:auto;color:var(--muted);transition:transform .2s}.hubI[open]>summary::after{transform:rotate(90deg)}
 .hubB{padding:0 14px 14px}.hubB .info h3:first-child{margin-top:0}
+
+/* ===== 26/11 (3) ===== */
+/* compte : sous les étapes, seulement hors du studio */
+#acct{align-self:flex-start;margin-top:-6px}
+.studioOn #acct{display:none}
+/* animations douces : menu qui glisse, éléments qui apparaissent l'un après l'autre, fermeture en fondu */
+@media (prefers-reduced-motion:no-preference){
+  .menuOv{animation:ovIn .28s ease both}.menuOv .menuP{animation:mIn .38s cubic-bezier(.22,1,.36,1) both}
+  .menuOv .menuP>*{animation:mItem .42s cubic-bezier(.22,1,.36,1) both}
+  .menuOv .menuP>*:nth-child(2){animation-delay:.04s}.menuOv .menuP>*:nth-child(3){animation-delay:.08s}.menuOv .menuP>*:nth-child(4){animation-delay:.12s}
+  .menuOv .menuI{animation:mItem .42s cubic-bezier(.22,1,.36,1) both}
+  .menuOv .menuI:nth-of-type(1){animation-delay:.06s}.menuOv .menuI:nth-of-type(2){animation-delay:.09s}.menuOv .menuI:nth-of-type(3){animation-delay:.12s}.menuOv .menuI:nth-of-type(4){animation-delay:.15s}.menuOv .menuI:nth-of-type(5){animation-delay:.18s}.menuOv .menuI:nth-of-type(6){animation-delay:.21s}
+  .menuOv.closing{animation:ovOut .26s ease both}.menuOv.closing .menuP{animation:mOut .26s cubic-bezier(.4,0,.6,1) both}
+  .popOv.closing{animation:ovOut .2s ease both}.popOv.closing .popC{animation:popOut .2s ease both}
+  @keyframes ovIn{from{background:rgba(47,35,41,0)}}@keyframes ovOut{to{background:rgba(47,35,41,0)}}
+  @keyframes mIn{from{transform:translateX(-104%)}}@keyframes mOut{to{transform:translateX(-104%)}}
+  @keyframes mItem{from{opacity:0;transform:translateX(-14px)}}
+  @keyframes popOut{to{opacity:0;transform:translateY(14px) scale(.985)}}
+  .popOv.float .popC{animation:popFloat .3s cubic-bezier(.22,1.2,.36,1) both}
+  @keyframes popFloat{from{opacity:0;transform:scale(.94) translateY(8px)}}
+}
+.menuOv.closing,.popOv.closing{pointer-events:none}
+.menuP{overscroll-behavior:contain}
+/* bouton flottant de l'accueil : centré sans transformation (plus stable), s'efface quand une fenêtre est ouverte */
+.fab{left:0;right:0;margin:0 auto;width:max-content;transform:none;backface-visibility:hidden;transition:opacity .25s ease,translate .25s ease}
+html.ovOpen .fab{opacity:0;translate:0 18px;pointer-events:none}
+@media (max-width:900px){html.ovOpen,html.ovOpen body{overflow:hidden}}
+/* mini page flottante (réglages du site) : petite carte centrée, aussi sur téléphone */
+.popOv.float{align-items:center;padding:16px}
+.popOv.float .popC{width:min(380px,100%);border-radius:22px;max-height:86vh;padding:16px 18px 18px;box-shadow:0 24px 60px rgba(30,15,20,.35)}
+.popOv.float .popF{display:none}
+.popOv.float .menuT{margin-top:8px}
+/* langue : petite liste qui se déplie sous la flèche */
+.langBtn{width:100%;font:inherit;color:inherit;cursor:pointer;text-align:left}
+.chev{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;color:var(--muted);transition:transform .25s ease;flex:none}
+.langW.open .chev{transform:rotate(180deg)}
+.langList{display:grid;grid-template-rows:0fr;transition:grid-template-rows .28s cubic-bezier(.22,1,.36,1)}
+.langList>div{overflow:hidden;display:flex;flex-direction:column}
+.langW.open .langList{grid-template-rows:1fr}
+.langI{display:flex;justify-content:space-between;align-items:center;background:none;border:0;border-bottom:1px solid var(--line);font:inherit;font-size:14px;color:var(--ink);padding:10px 12px;cursor:pointer;text-align:left}
+.langI:last-child{border-bottom:0}.langI span{color:var(--gold2);font-weight:700}.langI small{color:var(--muted);font-size:11px}
+.langI:disabled{color:var(--muted);cursor:default}
+/* apparence : interrupteur « verre liquide » */
+.lgSeg{position:relative;display:grid;grid-template-columns:repeat(3,1fr);padding:4px;border-radius:999px;background:linear-gradient(180deg,rgba(120,84,64,.10),rgba(120,84,64,.05));border:1px solid var(--line);touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;box-shadow:inset 0 1px 3px rgba(60,35,20,.10)}
+.lgSeg button{position:relative;z-index:3;background:none;border:0;font:inherit;font-size:13px;font-weight:600;color:var(--muted);padding:10px 4px;border-radius:999px;cursor:pointer;transition:color .25s}
+.lgSeg button[aria-checked="true"],.lgSeg button.hov{color:var(--ink)}
+.lgThumb{position:absolute;z-index:1;top:4px;bottom:4px;left:4px;width:calc((100% - 8px) / 3);border-radius:999px;pointer-events:none;
+  transition:transform .5s cubic-bezier(.3,1.35,.45,1),scale .3s cubic-bezier(.3,1.35,.45,1);
+  background:linear-gradient(180deg,rgba(255,255,255,.62) 0%,rgba(255,255,255,.22) 55%,rgba(255,255,255,.38) 100%);
+  -webkit-backdrop-filter:blur(2px) saturate(170%) brightness(1.06);backdrop-filter:blur(2px) saturate(170%) brightness(1.06);
+  border:1px solid rgba(255,255,255,.75);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.95),inset 0 -2px 4px rgba(120,84,64,.12),inset 0 0 0 .5px rgba(255,255,255,.4),0 6px 16px rgba(60,35,20,.18),0 1px 3px rgba(60,35,20,.12)}
+.lgThumb::after{content:"";position:absolute;left:14%;right:14%;top:2px;height:38%;border-radius:999px;background:linear-gradient(180deg,rgba(255,255,255,.85),rgba(255,255,255,0))}
+.lgSeg.drag .lgThumb{scale:1.12 1.22}
+html.dark .lgSeg{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.02));box-shadow:inset 0 1px 3px rgba(0,0,0,.35)}
+html.dark .lgThumb{background:linear-gradient(180deg,rgba(255,255,255,.26) 0%,rgba(255,255,255,.07) 55%,rgba(255,255,255,.14) 100%);border-color:rgba(255,255,255,.32);
+  box-shadow:inset 0 1px 1px rgba(255,255,255,.45),inset 0 -2px 4px rgba(0,0,0,.25),0 6px 18px rgba(0,0,0,.45)}
+html.dark .lgThumb::after{background:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0))}
 </style>
 </head>
 <body><div style="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:200;background:#B7772F;color:#fff;font:600 11px/1 Poppins,system-ui,sans-serif;padding:4px 10px;border-radius:99px;pointer-events:none;letter-spacing:.08em;opacity:.9">VERSION D'ESSAI</div>
@@ -769,9 +827,9 @@ html.dark .glabel,html.dark .menuT{color:var(--gold)}
 <div class="wrap">
   <header class="top">
     <div class="brand"><small>visionboard-ci.com · Vision board 2027</small><h1>L'Atelier de <em>Lumière</em></h1><p class="tagline">Glisse, dépose, illumine. Ton année commence ici.</p></div>
-    <span class="acct off" id="acct"><i></i>Tes tableaux sont gardés sur cet appareil</span>
   </header>
   <nav class="steps" id="steps" aria-label="Étapes"></nav>
+  <span class="acct off" id="acct"><i></i>Tes tableaux sont gardés sur cet appareil</span>
   <main id="view"></main>
 </div>
 <div id="layer"></div>
@@ -1800,7 +1858,7 @@ function renderTools(){
   /* panneau façon iPhone (téléphone) : on l'attrape par la poignée ou par la ligne des onglets */
   {const gb=T.querySelector("#grab"),tb=T.querySelector(".tabs");if(gb)gb.onpointerdown=e=>sheetDrag(T,e,false);if(tb)tb.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse")sheetDrag(T,e,true)})}
   T.querySelector("#sheetT").onclick=()=>{if(matchMedia("(max-width:900px)").matches)sheetAnimTo(T,S.sheetMin?"mid":"min");else{S.sheetMin=!S.sheetMin;S.sheetAuto=false;renderTools();requestAnimationFrame(applyView)}};
-  T.querySelectorAll(".tab[data-t]").forEach(b=>b.onclick=()=>{S.tab=b.dataset.t;S.sheetMin=false;renderTools()});
+  T.querySelectorAll(".tab[data-t]").forEach(b=>b.onclick=()=>{if(S.tab!==b.dataset.t){(S.tabHist=S.tabHist||[]).push(S.tab);if(S.tabHist.length>12)S.tabHist.shift()}S.tab=b.dataset.t;S.sheetMin=false;renderTools()});
   const wf=T.querySelector("#wfold");if(wf)wf.onclick=()=>{S.womenView={a:{"3545":"35","4555":"45"}[S.age]||"",c:S.teint||"noire"};S.q="";renderTools();const tb=document.querySelector("#tools .tbody");if(tb)tb.scrollTop=0};
   const wb=T.querySelector("#wback");if(wb)wb.onclick=()=>{S.womenView=null;renderTools()};
   T.querySelectorAll(".wfa").forEach(b=>b.onclick=()=>{S.womenView={...S.womenView,a:b.dataset.a};renderTools()});
@@ -2004,7 +2062,7 @@ async function openBoard(b){b={...safeBoard(b),id:b&&typeof b.id==="string"?b.id
   els.forEach(e=>e.id=uid++);
   Object.assign(S,{boardId:b.id,name:b.name,format:fmtKey(b.format),support:b.support||S.support,cadreCol:b.cadreCol||S.cadreCol,ml:!!b.ml,nb:!!b.nb,model:b.model,bg:b.bg,els,sparks:JSON.parse(JSON.stringify(b.sparks||[])),spg:{s:(b.spg&&b.spg.s)??1,o:(b.spg&&b.spg.o)??1},hair:b.hair==="n"?"c":(b.hair||""),sexe:b.sexe||S.sexe,teint:b.teint||S.teint,age:b.age||S.age||"2035",hist:[],sel:null,fmtUndo:null,keep:!b.draft});
   ensureSup();lastSaved=JSON.stringify({kind:"board",name:b.name,updatedAt:0,format:b.format,model:b.model,bg:b.bg,els:b.els,sparks:b.sparks||[],sexe:b.sexe,teint:b.teint});S.saveState=b.draft?"Brouillon gardé ✓":"Enregistré ✓";go(1)}
-function newBoard(){S.phc="";const d=new Date();Object.assign(S,{boardId:newBoardId(),name:"Mon tableau du "+d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}),els:[],sparks:[],hist:[],sel:null,fmtUndo:null,saveState:"",cleared:false,keep:false});lastSaved="";S.tab="modeles";applyModel(S.model,false);go(1)}
+function newBoard(){S.phc="";S.tabHist=[];const d=new Date();Object.assign(S,{boardId:newBoardId(),name:"Mon tableau du "+d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}),els:[],sparks:[],hist:[],sel:null,fmtUndo:null,saveState:"",cleared:false,keep:false});lastSaved="";S.tab="modeles";applyModel(S.model,false);go(1)}
 let OWNER=false; /* boutons réservés (téléchargement HD) : activé seulement à la connexion du compte admin */
 let H2I=null;
 async function exportBoard(btn){if(S.exporting)return;S.exporting=true;const old=btn?btn.innerHTML:"";if(btn){btn.disabled=true;btn.innerHTML="⏳ Préparation…"}
@@ -2125,8 +2183,8 @@ function openProjects(mode){const keep={format:S.format,support:S.support,offer:
     const bk=c.querySelector("#pjBack");if(bk)bk.onclick=()=>{Object.assign(S,keep);mode="list";draw(c);c.scrollTop=0};
     c.querySelector("#pjGo").onclick=()=>{created=true;closePop();S.womenView=null;S.fdoms=[];S.ageViews=[];newBoard()}
   },{center:true,onClose:()=>{if(!created)Object.assign(S,keep)}})}
-function closePop(){const p=document.getElementById("popOv");if(p){const f=p._onClose;p.remove();if(f)f();return true}return false}
-function openPop(anchor,draw,o={}){closePop();const d=document.createElement("div");d.id="popOv";d.className="popOv"+(o.center?" center":"");d._onClose=o.onClose;d.innerHTML=`<div class="popC" role="dialog" aria-modal="true"></div>`;document.body.appendChild(d);const c=d.firstChild;
+function closePop(){const p=document.getElementById("popOv");if(p){const f=p._onClose;p.removeAttribute("id");p.classList.add("closing");setTimeout(()=>p.remove(),matchMedia("(prefers-reduced-motion: reduce)").matches?0:200);ovSync();if(f)f();return true}return false}
+function openPop(anchor,draw,o={}){closePop();const d=document.createElement("div");d.id="popOv";d.className="popOv"+(o.center?" center":"")+(o.float?" float":"");d._onClose=o.onClose;d.innerHTML=`<div class="popC" role="dialog" aria-modal="true"></div>`;document.body.appendChild(d);ovSync();const c=d.firstChild;
   const wide=!matchMedia("(max-width:900px)").matches&&anchor;if(wide)d.classList.add("anch");draw(c);
   if(wide){const r=anchor.getBoundingClientRect(),w=c.offsetWidth;const mid=r.left+r.width/2;c.style.left=Math.round(Math.min(innerWidth-w-12,Math.max(12,mid>innerWidth/2?r.right-w:r.left)))+"px";c.style.top=Math.round(r.bottom+8)+"px"}
   d.addEventListener("click",e=>{if(e.target===d||e.target.closest("[data-popx]"))closePop()})}
@@ -2169,30 +2227,59 @@ function openFilters(btn){const avs=new Set(ageViewsOn().length?ageViewsOn():[S.
     c.querySelectorAll(".fo[data-d]").forEach(b=>b.onclick=()=>{const d=b.dataset.d;if(ds.has(d))ds.delete(d);else ds.add(d);draw(c)});
     c.querySelector("#fRst").onclick=()=>{avs.clear();avs.add(S.age);wv=null;ds.clear();draw(c)};
     c.querySelector("#fOk").onclick=()=>{S.womenView=wv;S.ageView=null;S.ageViews=wv?[]:[...avs].filter(k=>!(avs.size===1&&k===S.age));S.fdoms=[...ds];S.q="";S.filter="all";closePop();renderTools();const tb=document.querySelector("#tools .tbody");if(tb)tb.scrollTop=0}})}
-function closeOverlay(){if(closePop())return true;const z=document.querySelector(".zoomOv");if(z){z.remove();return true}const m=document.getElementById("menuOv");if(m){m.remove();return true}
+function closeOverlay(){if(closePop())return true;const z=document.querySelector(".zoomOv");if(z){z.remove();return true}const m=document.getElementById("menuOv");if(m){closeMenu();return true}
   const L=document.getElementById("layer");if(L&&L.innerHTML.trim()){L.innerHTML="";return true}if(S.tourI!=null){endTour();return true}return false}
-window.addEventListener("popstate",e=>{if(closeOverlay()){try{history.pushState({vb:1,step:S.step,page:S.page||null},"")}catch(x){}return}
+/* bouton retour dans le studio : 1) désélectionne, 2) arrête le pinceau, 3) dézoome, 4) revient à l'onglet d'outils précédent ; sinon quitte le studio */
+function studioBack(){if(S.step!==1||S.page)return false;
+  if(S.sel!=null||S.crop||S.reframe){S.sel=null;S.crop=null;S.reframe=null;S.notice="";renderBoardArea();return true}
+  if(S.brush){S.brush=false;document.body.classList.remove("brushOn");renderTools();renderBoardArea();return true}
+  if(S.zoom>1.01){setZoom(1);return true}
+  const H=S.tabHist||[];if(H.length){S.tab=H.pop();S.sheetMin=false;renderTools();return true}
+  return false}
+window.addEventListener("popstate",e=>{if(closeOverlay()||studioBack()){try{history.pushState({vb:1,step:S.step,page:S.page||null},"")}catch(x){}return}
   const st=e.state&&e.state.vb?e.state:{step:0,page:null};NAVPOP=true;try{if(st.page)openPage(st.page);else{if(st.step>=1&&!S.boardId){go(0)}else go(st.step||0)}}finally{NAVPOP=false}});
 const opt=(k,v,l,x="")=>`<button class="opt" data-k="${k}" data-v="${v}" aria-pressed="${S[k]===v}" ${x}>${l}</button>`;
 const fmtIcon=ar=>{const w=40*Math.sqrt(ar),h=40/Math.sqrt(ar);const k=Math.min(1,46/w,46/h);return`<span class="ic"><i style="width:${w*k}px;height:${h*k}px"></i></span>`};
-function openPage(p){if(S.tourI!=null)endTour();document.getElementById("layer").innerHTML="";closeMenu();if(p==="atelier"){if(S.boardId){go(1)}else{go(0);openProjects()}return}if(p==="new"){go(0);openProjects("new");return}if(p==="galerie"&&TPL===null)loadTpls().then(()=>{if(S.page==="galerie")render()});S.page=p;document.body.classList.remove("studioOn");render();window.scrollTo({top:0});navPush()}
-function closeMenu(){const m=document.getElementById("menuOv");if(m)m.remove()}
-function openMenu(view){closeMenu();const items=[["profil","👤","Mon profil","Toi, ton teint, ton âge, tes coordonnées"],["boards","🖼️","Mes tableaux",S.saved.length+" tableau"+(S.saved.length>1?"x":"")],["orders","📦","Mes commandes",(S.orders||[]).length?(S.orders.length+" commande"+(S.orders.length>1?"s":"")):"Aucune pour l'instant"],["galerie","✨","Modèles","Des tableaux déjà composés à personnaliser"],...(ISADMIN?[["admin","🛠️","Commandes clientes","Espace administratrice"]]:[])];
-  const d=document.createElement("div");d.id="menuOv";d.className="menuOv";d.innerHTML=`<nav class="menuP" aria-label="Menu"></nav>`;document.body.appendChild(d);const P=d.firstChild;
+function openPage(p){if(S.tourI!=null)endTour();document.getElementById("layer").innerHTML="";closeMenu();if(p==="home"){go(0);return}if(p==="atelier"){if(S.boardId){go(1)}else{go(0);openProjects()}return}if(p==="new"){go(0);openProjects("new");return}if(p==="galerie"&&TPL===null)loadTpls().then(()=>{if(S.page==="galerie")render()});S.page=p;document.body.classList.remove("studioOn");render();window.scrollTo({top:0});navPush()}
+function closeMenu(){const m=document.getElementById("menuOv");if(!m)return;m.removeAttribute("id");m.classList.add("closing");setTimeout(()=>m.remove(),matchMedia("(prefers-reduced-motion: reduce)").matches?0:260);ovSync()}
+/* une fenêtre ou le menu est ouvert : la page derrière ne défile plus et le bouton flottant s'efface (plus de saut d'affichage) */
+function ovSync(){document.documentElement.classList.toggle("ovOpen",!!(document.getElementById("menuOv")||document.getElementById("popOv")))}
+function openMenu(view){closeMenu();const items=[["home","🏠","Accueil","Les inspirations et tes tableaux"],["profil","👤","Mon profil","Toi, ton teint, ton âge, tes coordonnées"],["boards","🖼️","Mes tableaux",S.saved.length+" tableau"+(S.saved.length>1?"x":"")],["orders","📦","Mes commandes",(S.orders||[]).length?(S.orders.length+" commande"+(S.orders.length>1?"s":"")):"Aucune pour l'instant"],["galerie","✨","Modèles","Des tableaux déjà composés à personnaliser"],...(ISADMIN?[["admin","🛠️","Commandes clientes","Espace administratrice"]]:[])];
+  const d=document.createElement("div");d.id="menuOv";d.className="menuOv";d.innerHTML=`<nav class="menuP" aria-label="Menu"></nav>`;document.body.appendChild(d);ovSync();const P=d.firstChild;
   const draw=v=>{
-    if(v==="reglages"){const th=themePref();
-      P.innerHTML=`<div class="menuH"><button class="btn small ghost" id="menuBk" aria-label="Retour au menu">‹</button><strong>Réglages</strong><button class="btn small ghost" id="menuX" aria-label="Fermer le menu">✕</button></div>
-      <section class="menuSec"><span class="menuT">Mon compte</span><div class="setRow">${!HOSTED?`<span class="setTx">Le compte est disponible sur visionboard-ci.com.</span>`:FBUSER?`<span class="setTx"><strong>${esc(FBUSER.displayName||FBUSER.email||"Mon compte")}</strong><small>${ISADMIN?"Administratrice · ":""}Tes tableaux sont gardés dans ton compte</small></span><button class="btn small ghost" id="stOut">Se déconnecter</button>`:`<span class="setTx"><strong>Pas connectée</strong><small>Tes tableaux sont gardés sur cet appareil</small></span><button class="btn small go" id="stIn">Se connecter</button>`}</div></section>
-      <section class="menuSec"><span class="menuT">Apparence</span><div class="seg thSeg" role="radiogroup" aria-label="Apparence">${[["auto","Automatique"],["light","Clair"],["dark","Sombre"]].map(([k,l])=>`<button class="segb" role="radio" data-th="${k}" aria-pressed="${th===k}" aria-checked="${th===k}">${l}</button>`).join("")}</div><small class="setHint">Automatique : comme ton téléphone ou ton ordinateur.</small></section>
-      <div class="menuWa setFoot"><button class="setLink" id="stInfo">Aide & infos <span aria-hidden="true">›</span></button><button class="setLink" data-mp="idees">Boîte à idées <span aria-hidden="true">›</span></button></div>`;
-      P.querySelector("#menuBk").onclick=()=>draw("");P.querySelectorAll("[data-th]").forEach(b=>b.onclick=()=>{setTheme(b.dataset.th);draw("reglages")});
-      const si=P.querySelector("#stIn");if(si)si.onclick=()=>{closeMenu();loginModal()};const so=P.querySelector("#stOut");if(so)so.onclick=async()=>{await FB.auth.signOut();location.reload()};
-      P.querySelector("#stInfo").onclick=()=>openPage("infos")}
-    else{P.innerHTML=`<div class="menuH"><strong>visionboard-ci.com</strong><button class="btn small ghost setG" id="menuSet" aria-label="Réglages du site" title="Réglages : compte, apparence, aide">${ICO.gear}</button><button class="btn small ghost" id="menuX" aria-label="Fermer le menu">✕</button></div>
+    {P.innerHTML=`<div class="menuH"><strong>visionboard-ci.com</strong><button class="btn small ghost setG" id="menuSet" aria-label="Réglages du site" title="Réglages : compte, apparence, aide">${ICO.gear}</button><button class="btn small ghost" id="menuX" aria-label="Fermer le menu">✕</button></div>
       <section class="menuSec"><span class="menuT">Mon espace</span>${items.map(([k,ic,t,sub])=>`<button class="menuI${S.page===k?" on":""}" data-mp="${k}"><span class="mic" aria-hidden="true">${ic}</span><span><strong>${t}</strong><small>${esc(sub)}</small></span></button>`).join("")}</section>
-      <div class="menuWa">${waCard()}</div>`;P.querySelector("#menuSet").onclick=()=>draw("reglages")}
+      <div class="menuWa">${waCard()}</div>`;P.querySelector("#menuSet").onclick=()=>{closeMenu();openSiteSettings()}}
     P.querySelector("#menuX").onclick=closeMenu;P.querySelectorAll("[data-mp]").forEach(b=>b.onclick=()=>openPage(b.dataset.mp));const f=P.querySelector(".menuI,.segb");if(f)f.focus()};
   d.onclick=e=>{if(e.target===d)closeMenu()};draw(view||"")}
+/* ===== réglages du site : mini page flottante ===== */
+const CHEV=`<svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>`;
+function openSiteSettings(){openPop(null,c=>{const th=themePref();const TH=[["auto","Auto"],["light","Clair"],["dark","Sombre"]];
+  c.innerHTML=`${popHead(ICO.gear+" Réglages")}
+  <span class="menuT">Mon compte</span><div class="setRow">${!HOSTED?`<span class="setTx"><small>Le compte est disponible sur visionboard-ci.com.</small></span>`:FBUSER?`<span class="setTx"><strong>${esc(FBUSER.displayName||FBUSER.email||"Mon compte")}</strong><small>${ISADMIN?"Administratrice · ":""}Tes tableaux sont gardés dans ton compte</small></span><button class="btn small ghost" id="stOut">Se déconnecter</button>`:`<span class="setTx"><strong>Pas connectée</strong><small>Tes tableaux sont gardés sur cet appareil</small></span><button class="btn small go" id="stIn">Se connecter</button>`}</div>
+  <span class="menuT">Langue</span><div class="langW"><button class="setRow langBtn" id="langBtn" aria-expanded="false"><span class="setTx"><strong>Français</strong></span>${CHEV}</button>
+    <div class="langList"><div><button class="langI" aria-checked="true">Français <span aria-hidden="true">✓</span></button><button class="langI" disabled>English <small>bientôt</small></button></div></div></div>
+  <span class="menuT">Apparence</span><div class="lgSeg" id="thSeg" role="radiogroup" aria-label="Apparence"><span class="lgThumb" aria-hidden="true"></span>${TH.map(([k,l])=>`<button role="radio" data-k="${k}" aria-checked="${th===k}">${l}</button>`).join("")}</div>
+  <small class="setHint">Glisse ou touche. Auto : comme ton téléphone ou ton ordinateur.</small>
+  <div class="setFoot"><button class="setLink" id="stInfo">Aide & infos <span aria-hidden="true">›</span></button><button class="setLink" id="stIdee">Boîte à idées <span aria-hidden="true">›</span></button></div>`;
+  const si=c.querySelector("#stIn");if(si)si.onclick=()=>{closePop();loginModal()};const so=c.querySelector("#stOut");if(so)so.onclick=async()=>{await FB.auth.signOut();location.reload()};
+  c.querySelector("#stInfo").onclick=()=>{closePop();openPage("infos")};c.querySelector("#stIdee").onclick=()=>{closePop();openPage("idees")};
+  const lb=c.querySelector("#langBtn");lb.onclick=()=>{const w=lb.parentElement;const o=!w.classList.contains("open");w.classList.toggle("open",o);lb.setAttribute("aria-expanded",o)};
+  c.querySelector(".langI").onclick=()=>lb.click();
+  bindGlassSeg(c.querySelector("#thSeg"),TH.map(x=>x[0]),th,setTheme)},{center:true,float:true})}
+/* interrupteur « verre liquide » : la pastille suit le doigt, s'étire avec la vitesse, et le choix s'applique au relâché */
+function bindGlassSeg(seg,keys,cur,onPick){const th=seg.querySelector(".lgThumb"),B=[...seg.querySelectorAll("[data-k]")],n=keys.length;let idx=Math.max(0,keys.indexOf(cur));const W=()=>(seg.clientWidth-8)/n;
+  const place=(i,anim)=>{th.style.transition=anim?"":"none";th.style.transform=`translateX(${i*W()}px)`;B.forEach((b,j)=>b.setAttribute("aria-checked",j===i))};
+  requestAnimationFrame(()=>place(idx,false));
+  seg.addEventListener("pointerdown",e=>{if(e.button>0)return;e.preventDefault();const r=seg.getBoundingClientRect();const off=e.clientX-r.left-4-idx*W();const grab=off>=0&&off<=W();
+    const pos=cx=>Math.max(0,Math.min((n-1)*W(),cx-r.left-4-(grab?off:W()/2)));let last=e.clientX,lt=performance.now();
+    try{seg.setPointerCapture(e.pointerId)}catch(x){}seg.classList.add("drag");th.style.transition=grab?"none":"";th.style.transform=`translateX(${pos(e.clientX)}px)`;
+    const mv=ev=>{const now=performance.now();const v=Math.abs(ev.clientX-last)/Math.max(1,now-lt);last=ev.clientX;lt=now;th.style.transition="none";th.style.transform=`translateX(${pos(ev.clientX)}px) scaleX(${(1+Math.min(.22,v*.15)).toFixed(3)})`;
+      const k=Math.round(pos(ev.clientX)/W());B.forEach((b,j)=>b.classList.toggle("hov",j===k))};
+    const up=ev=>{seg.removeEventListener("pointermove",mv);seg.removeEventListener("pointerup",up);seg.removeEventListener("pointercancel",up);seg.classList.remove("drag");B.forEach(b=>b.classList.remove("hov"));
+      const k=Math.round(pos(ev.clientX)/W());const ch=k!==idx;idx=k;place(idx,true);if(ch||keys[idx]!==cur){cur=keys[idx];onPick(cur)}};
+    seg.addEventListener("pointermove",mv);seg.addEventListener("pointerup",up);seg.addEventListener("pointercancel",up)});
+  B.forEach((b,j)=>b.addEventListener("click",e=>{if(e.detail===0){idx=j;place(idx,true);cur=keys[j];onPick(cur)}}))}
 /* ===== apparence : Automatique (suit le téléphone) / Clair / Sombre — gardé sur l'appareil ===== */
 const themePref=()=>{const v=lsGet("theme");return v==="light"||v==="dark"?v:"auto"};
 function applyTheme(){const p=themePref();const d=p==="dark"||(p==="auto"&&matchMedia("(prefers-color-scheme: dark)").matches);const h=document.documentElement;h.classList.toggle("dark",d);h.style.colorScheme=d?"dark":"light";const m=document.getElementById("themeC");if(m)m.content=d?"#161117":"#F4ECE1"}
