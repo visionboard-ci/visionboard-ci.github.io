@@ -16,7 +16,9 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Vision boards personnalisés · L'Atelier de Lumière">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#F4ECE1">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F4ECE1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161117" media="(prefers-color-scheme: dark)">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
@@ -29,7 +31,7 @@
   --night:#EFE5D8; --night2:#F7F0E6; --panel:rgba(255,253,249,.72); --panel2:rgba(120,84,64,.08); --line:rgba(150,110,80,.2);
   --ink:#2F2329; --muted:#7D6A70; --gold:#B98A45; --gold2:#B7772F; --amber:#F3B562; --rose:#F4B6C2; --peach:#F7C6A3; --plum:#1B1530;
   --f-display:'Cormorant Garamond','Lora',Georgia,serif; --f-body:'Poppins',system-ui,sans-serif; --f-script:'Great Vibes',cursive;
-  color-scheme:light;
+  color-scheme:light dark; --veil:251,246,239;
 }
 *{box-sizing:border-box}
 html{min-height:100%;background:#F4ECE1}
@@ -669,6 +671,65 @@ canvas#fx{position:fixed;inset:0;width:100%;height:100%;z-index:80;pointer-event
 @media (max-width:900px){.selbar{height:40px;min-height:40px;overflow-y:hidden}.selbar>.hint{font-size:11.5px;line-height:1.3}}
 /* ordinateur : le tableau et les boutons du dessous tiennent dans l'écran */
 @media (min-width:901px){.boardWrap{--vh:calc(100vh - 250px)}}
+
+/* ===== onglets d'étapes : léger voile en dégradé (de bas en haut) pour que le texte se détache des guirlandes ===== */
+.steps{background:linear-gradient(to top,rgba(var(--veil),.97) 0%,rgba(var(--veil),.92) 70%,rgba(var(--veil),0) 100%);padding-top:16px;border-radius:0 0 10px 10px}
+.steps button[data-s]{text-shadow:0 0 8px rgba(var(--veil),.9)}
+
+/* petits titres dorés : un doré un peu plus foncé pour rester lisible sur fond clair (le mode sombre a le sien) */
+.glabel,.menuT{color:#94692A}
+@media (prefers-color-scheme:dark){.glabel,.menuT{color:var(--gold)}}
+/* ===== MODE SOMBRE (téléphone ou ordinateur réglé en sombre) =====
+   Seule l'interface change. Le tableau garde ses vraies couleurs (celles de l'impression). */
+@media (prefers-color-scheme:dark){
+  :root{color-scheme:dark;--night:#171219;--night2:#1F1922;--panel:rgba(42,33,45,.9);--panel2:rgba(255,225,190,.1);--line:rgba(235,205,175,.2);
+    --ink:#F3EAE2;--muted:#BBA9B0;--gold:#DDB06B;--gold2:#EDB96F;--veil:24,19,27;--surf:#211A24;--surf2:#2D2431}
+  html{background:#161117}
+  body{background:radial-gradient(1100px 650px at 50% -12%,#2C2131 0%,#1D171F 45%,#151016 100%) fixed;color:var(--ink)}
+  /* le tableau et ses aperçus gardent les couleurs claires d'origine */
+  .board,.room,.faceview,.phone .scr,.laptop .lid{--ink:#2F2329;--muted:#7D6A70;--line:rgba(150,110,80,.2);--panel:rgba(255,253,249,.72);--panel2:rgba(120,84,64,.08);--gold:#B98A45;--gold2:#B7772F;color-scheme:light}
+  /* surfaces : fenêtres, panneau d'outils, menu */
+  .tools,.popC,.popF,.menuP,.modal .card,.zoomBox,.authBox{background:var(--surf);color:var(--ink)}
+  .menuP{box-shadow:10px 0 40px rgba(0,0,0,.5)}
+  .card{background:var(--panel)}
+  .bhead{background:#2A2130;color:var(--gold)}
+  .wacard{background:#2A2130}
+  .surm{background:#2E2520}
+  /* éléments blancs → cartes sombres */
+  .popI,.pjI,.fo,.fs,.fclr,.tgl,.menuI,.menuS,.wfold,.faq details,.spt,.zoomBar .zb,.btn.danger{background:var(--surf2);color:var(--ink)}
+  .pjCur{background:rgba(221,176,107,.14)}
+  .fpill{background:#3A2E3D;color:var(--ink)}.fpu{background:#3D2F46}
+  .fo[aria-pressed="true"],.fs[aria-pressed="true"]{background:var(--ink);color:#1D171F;border-color:var(--ink)}
+  .fo[aria-pressed="true"] small{color:rgba(29,23,31,.65)}
+  .fsub{background:rgba(255,255,255,.04);border-left-color:var(--gold)}
+  .fo.fu{background:linear-gradient(var(--surf2),var(--surf2)) padding-box,linear-gradient(115deg,#E9C46A,#F4B6C2,#B98A45,#F7C6A3,#E9C46A) border-box;background-size:100% 100%,300% 100%}
+  .fo.fu[aria-pressed="true"]{background:linear-gradient(115deg,#5A3D4C,#7A5263) padding-box,linear-gradient(115deg,#E9C46A,#F4B6C2,#B98A45,#F7C6A3,#E9C46A) border-box;background-size:100% 100%,300% 100%;color:#fff}
+  .tgl i{background:#4A3F4D}
+  .btn.danger{color:#FF9C92;border-color:rgba(255,156,146,.45)}.btn.danger:hover{background:#3A2426}.btn.danger.sure{background:#C8362B;color:#fff;border-color:#C8362B}
+  .gdanger{color:#FF9C92!important}
+  .popH .savest.ok{color:#6FD39A}.savest.ok{color:#6FD39A}
+  /* champs de saisie */
+  input[type=text],input[type=tel],input[type=email],input[type=password],select,textarea,.ideaF textarea,.ideaF input[type=email],.ted textarea{background:#2A222D;color:var(--ink);border-color:var(--line)}
+  input::placeholder,textarea::placeholder{color:#9C8B92}
+  select option{background:#2A222D;color:var(--ink)}
+  /* boutons clairs (outils) et segments */
+  .btn.ghost{background:var(--panel);color:var(--ink)}
+  .studio .btn:not(.ghost):not(.go):not(.danger):not(#brush):not(#panBtn){background:var(--panel);color:var(--ink)}
+  .seg{background:rgba(255,255,255,.05)}
+  .afold[aria-pressed="true"]{color:#2E1D25}
+  /* guide (bulles du tutoriel) */
+  #tourL .tbub{background:#2A2130;color:var(--ink)}#tourL .tbub p{color:#D6C6CC}#tourL .tchips i{background:#3A2E3D;color:var(--ink)}
+  #tourL .tskip{color:#B8A6AD}#tourL .tprev{background:#3A2E3D;color:var(--ink)}
+  /* écran final (Ton année est illuminée) */
+  .final{background:radial-gradient(circle at 50% 40%,#2E2333,#151016 75%)}
+  /* aperçus de ce qui sera posé sur le tableau (écritures, dessins) : sur fond papier clair, comme à l'impression */
+  .stk{background:#F4ECE3;border-color:rgba(235,205,175,.35)}
+  .stk:hover{border-color:var(--gold)}
+  .fo.fu[aria-pressed="true"] small{color:rgba(255,255,255,.78)}
+  .supic rect{stroke:var(--ink)}
+  /* Google : bouton de marque, reste blanc */
+  .gbtn{background:#fff!important;color:#2F2329!important}
+}
 </style>
 </head>
 <body><div style="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:200;background:#B7772F;color:#fff;font:600 11px/1 Poppins,system-ui,sans-serif;padding:4px 10px;border-radius:99px;pointer-events:none;letter-spacing:.08em;opacity:.9">VERSION D'ESSAI</div>
