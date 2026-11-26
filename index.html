@@ -1005,6 +1005,9 @@ html.ovOpen .fabs{opacity:0;pointer-events:none}
 .pz-alucobond{box-shadow:2px 2px 0 #B9BFC6,0 10px 22px rgba(60,35,20,.35)}
 .pz-plexi{box-shadow:0 10px 24px rgba(60,35,20,.35);border-radius:2px;overflow:hidden}
 .pz-plexi::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,rgba(255,255,255,.0) 30%,rgba(255,255,255,.45) 45%,rgba(255,255,255,0) 60%),linear-gradient(180deg,rgba(255,255,255,.18),rgba(255,255,255,0) 40%)}
+
+/* menu : Aide & infos et Boîte à idées en liens discrets, au-dessus de WhatsApp */
+.menuFoot{margin:6px 4px 10px;padding-top:4px}
 </style>
 </head>
 <body>
@@ -2509,7 +2512,7 @@ function openMenu(view){closeMenu();const items=[["home","🏠","Accueil","Les i
   const draw=v=>{
     {P.innerHTML=`<div class="menuH"><strong>visionboard-ci.com</strong><button class="btn small ghost setG" id="menuSet" aria-label="Réglages du site" title="Réglages : compte, langue, apparence">${ICO.gear}</button><button class="btn small ghost" id="menuX" aria-label="Fermer le menu">✕</button></div>
       <section class="menuSec"><span class="menuT">Mon espace</span>${items.map(([k,ic,t,sub])=>`<button class="menuI${S.page===k?" on":""}" data-mp="${k}"><span class="mic" aria-hidden="true">${ic}</span><span><strong>${t}</strong><small>${esc(sub)}</small></span></button>`).join("")}</section>
-      <section class="menuSec menuSec2">${[["infos","❓","Aide & infos","Livraison, paiement, questions"],["idees","💡","Boîte à idées","Une image ou un thème qui te manque ?"]].map(([k,ic,t,sub])=>`<button class="menuI${S.page===k?" on":""}" data-mp="${k}"><span class="mic" aria-hidden="true">${ic}</span><span><strong>${t}</strong><small>${sub}</small></span></button>`).join("")}</section>
+      <div class="setFoot menuFoot"><button class="setLink" data-mp="infos">Aide & infos <span aria-hidden="true">›</span></button><button class="setLink" data-mp="idees">Boîte à idées <span aria-hidden="true">›</span></button></div>
       <div class="menuWa">${waCard()}</div>`;P.querySelector("#menuSet").onclick=()=>{closeMenu();openSiteSettings()}}
     P.querySelector("#menuX").onclick=closeMenu;P.querySelectorAll("[data-mp]").forEach(b=>b.onclick=()=>openPage(b.dataset.mp));const f=P.querySelector(".menuI,.segb");if(f)f.focus()};
   d.onclick=e=>{if(e.target===d)closeMenu()};draw(view||"")}
