@@ -2084,7 +2084,7 @@ function renderTools(){if(S.rail===undefined)S.rail=lsGet("rail")===true;
   {const gb=T.querySelector("#grab"),tb=T.querySelector(".tabs");if(gb)gb.onpointerdown=e=>sheetDrag(T,e,false);if(tb)tb.addEventListener("pointerdown",e=>{if(e.pointerType!=="mouse")sheetDrag(T,e,true)})}
   T.querySelector("#sheetT").onclick=()=>{if(matchMedia("(max-width:900px)").matches)sheetAnimTo(T,S.sheetMin?"mid":"min");else{S.sheetMin=!S.sheetMin;S.sheetAuto=false;renderTools();requestAnimationFrame(applyView)}};
   {const rb=T.querySelector("#railBtn");if(rb)rb.onclick=()=>setRail(!S.rail)}
-  T.querySelectorAll(".tab[data-t]").forEach(b=>b.onclick=()=>{if(S.rail)setRail(false);if(S.tab!==b.dataset.t){(S.tabHist=S.tabHist||[]).push(S.tab);if(S.tabHist.length>12)S.tabHist.shift()}S.tab=b.dataset.t;S.sheetMin=false;renderTools()});
+  T.querySelectorAll(".tab[data-t]").forEach(b=>b.onclick=()=>{if(S.rail)setRail(false);const ch=S.tab!==b.dataset.t;S.tab=b.dataset.t;S.sheetMin=false;renderTools();if(ch)navPush()});
   const wf=T.querySelector("#wfold");if(wf)wf.onclick=()=>{S.womenView={a:{"3545":"35","4555":"45"}[S.age]||"",c:S.teint||"noire"};S.q="";renderTools();const tb=document.querySelector("#tools .tbody");if(tb)tb.scrollTop=0};
   const wb=T.querySelector("#wback");if(wb)wb.onclick=()=>{S.womenView=null;renderTools()};
   T.querySelectorAll(".wfa").forEach(b=>b.onclick=()=>{S.womenView={...S.womenView,a:b.dataset.a};renderTools()});
@@ -2288,7 +2288,7 @@ async function openBoard(b){b={...safeBoard(b),id:b&&typeof b.id==="string"?b.id
   els.forEach(e=>e.id=uid++);
   Object.assign(S,{boardId:b.id,name:b.name,format:fmtKey(b.format),support:b.support||S.support,cadreCol:b.cadreCol||S.cadreCol,ml:!!b.ml,nb:!!b.nb,model:b.model,bg:b.bg,els,sparks:JSON.parse(JSON.stringify(b.sparks||[])),spg:{s:(b.spg&&b.spg.s)??1,o:(b.spg&&b.spg.o)??1},hair:b.hair==="n"?"c":(b.hair||""),sexe:b.sexe||S.sexe,teint:b.teint||S.teint,age:b.age||S.age||"2035",hist:[],sel:null,fmtUndo:null,keep:!b.draft});
   ensureSup();lastSaved=JSON.stringify({kind:"board",name:b.name,updatedAt:0,format:b.format,model:b.model,bg:b.bg,els:b.els,sparks:b.sparks||[],sexe:b.sexe,teint:b.teint});S.saveState=b.draft?"Brouillon gardé ✓":"Enregistré ✓";go(1)}
-function newBoard(){S.phc="";S.tabHist=[];const d=new Date();Object.assign(S,{boardId:newBoardId(),name:"Mon tableau du "+d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}),els:[],sparks:[],hist:[],sel:null,fmtUndo:null,saveState:"",cleared:false,keep:false});lastSaved="";S.tab="modeles";applyModel(S.model,false);go(1)}
+function newBoard(){S.phc="";const d=new Date();Object.assign(S,{boardId:newBoardId(),name:"Mon tableau du "+d.toLocaleDateString("fr-FR",{day:"numeric",month:"short"}),els:[],sparks:[],hist:[],sel:null,fmtUndo:null,saveState:"",cleared:false,keep:false});lastSaved="";S.tab="modeles";applyModel(S.model,false);go(1)}
 let OWNER=false; /* boutons réservés (téléchargement HD) : activé seulement à la connexion du compte admin */
 let H2I=null;
 async function exportBoard(btn){if(S.exporting)return;S.exporting=true;const old=btn?btn.innerHTML:"";if(btn){btn.disabled=true;btn.innerHTML="⏳ Préparation…"}
@@ -2369,7 +2369,23 @@ function renderSteps(){document.getElementById("steps").innerHTML=`<button class
 function go(n){if(S.tourI!=null)endTour();if(n!==1&&S.focus){S.focus=false;document.body.classList.remove("deskFocus")}S.page=null;S.step=n;document.body.classList.toggle("studioOn",n===1);S.brush=false;document.body.classList.remove("brushOn");render();window.scrollTo({top:0});navPush()}
 /* historique du navigateur : le bouton retour (Android) revient en arrière dans le site au lieu de le fermer */
 let NAVPOP=false;
-function navPush(){if(NAVPOP)return;const st={vb:1,step:S.step,page:S.page||null};const c=history.state;if(c&&c.vb&&c.step===st.step&&c.page===st.page)return;try{history.pushState(st,"")}catch(e){}}
+/* ===== bouton retour (Android) =====
+   Chrome sur Android ignore les étapes d'historique créées sans geste de la cliente : on ne crée donc une étape QUE quand
+   elle touche quelque chose (changer d'étape, de page, d'onglet d'outils, ouvrir une fenêtre ou le menu), jamais pendant un retour.
+   - fenêtre / menu ouvert : une étape « ov » ; retour = la fermer. Fermée autrement (✕, Échap…) : on retire cette étape.
+   - aller ailleurs depuis une fenêtre : l'étape « ov » est remplacée par la nouvelle page (pas de retour qui tombe dans le vide). */
+const navState=()=>({vb:1,step:S.step,page:S.page||null,tab:S.step===1&&!S.page?S.tab:null});
+function navPush(){if(NAVPOP)return;const st=navState();const c=history.state;
+  try{if(c&&c.vb&&c.ov){history.replaceState(st,"");return}if(c&&c.vb&&c.step===st.step&&c.page===st.page&&c.tab===st.tab)return;history.pushState(st,"")}catch(e){}}
+let NAVSKIP=false,OVPOP=false,OVON=false,OVGUARD=false;
+const overlayOpen=()=>!!(document.getElementById("popOv")||document.getElementById("menuOv")||document.querySelector(".zoomOv")||(document.getElementById("layer")||{innerHTML:""}).innerHTML.trim()||S.tourI!=null);
+function ovWatch(){const open=overlayOpen();if(open===OVON)return;OVON=open;
+  if(open){OVGUARD=false;if(NAVPOP)return;const c=history.state;if(c&&c.ov){OVGUARD=true;return}
+    /* ouverte toute seule (sans geste) : pas d'étape, sinon Chrome la marquerait « à sauter » */
+    if(navigator.userActivation&&!navigator.userActivation.isActive)return;try{history.pushState({...navState(),ov:1},"");OVGUARD=true}catch(e){}return}
+  if(OVPOP){OVPOP=false;return}
+  setTimeout(()=>{const c=history.state;if(c&&c.ov&&!overlayOpen()){NAVSKIP=true;history.back()}},0)}
+try{new MutationObserver(ovWatch).observe(document.body,{childList:true});const LY=document.getElementById("layer");if(LY)new MutationObserver(ovWatch).observe(LY,{childList:true})}catch(e){}
 /* ===== petites fenêtres : « Réglages du tableau » et « Filtres » =====
    Ordinateur : la fenêtre s'ouvre sous le bouton. Téléphone : elle monte du bas de l'écran.
    Elle se ferme avec ✕, Échap, le bouton retour d'Android ou en touchant à côté. */
@@ -2455,15 +2471,11 @@ function openFilters(btn){const avs=new Set(ageViewsOn().length?ageViewsOn():[S.
     c.querySelector("#fOk").onclick=()=>{S.womenView=wv;S.ageView=null;S.ageViews=wv?[]:[...avs].filter(k=>!(avs.size===1&&k===S.age));S.fdoms=[...ds];S.q="";S.filter="all";closePop();renderTools();const tb=document.querySelector("#tools .tbody");if(tb)tb.scrollTop=0}})}
 function closeOverlay(){if(closePop())return true;const z=document.querySelector(".zoomOv");if(z){z.remove();return true}const m=document.getElementById("menuOv");if(m){closeMenu();return true}
   const L=document.getElementById("layer");if(L&&L.innerHTML.trim()){L.innerHTML="";return true}if(S.tourI!=null){endTour();return true}return false}
-/* bouton retour dans le studio : 1) désélectionne, 2) arrête le pinceau, 3) dézoome, 4) revient à l'onglet d'outils précédent ; sinon quitte le studio */
-function studioBack(){if(S.step!==1||S.page)return false;
-  if(S.sel!=null||S.crop||S.reframe){S.sel=null;S.crop=null;S.reframe=null;S.notice="";renderBoardArea();return true}
-  if(S.brush){S.brush=false;document.body.classList.remove("brushOn");renderTools();renderBoardArea();return true}
-  if(S.zoom>1.01){setZoom(1);return true}
-  const H=S.tabHist||[];if(H.length){S.tab=H.pop();S.sheetMin=false;renderTools();return true}
-  return false}
-window.addEventListener("popstate",e=>{if(closeOverlay()||studioBack()){try{history.pushState({vb:1,step:S.step,page:S.page||null},"")}catch(x){}return}
-  const st=e.state&&e.state.vb?e.state:{step:0,page:null};NAVPOP=true;try{if(st.page)openPage(st.page);else{if(st.step>=1&&!S.boardId){go(0)}else go(st.step||0)}}finally{NAVPOP=false}});
+window.addEventListener("popstate",e=>{if(NAVSKIP){NAVSKIP=false;return}
+  if(overlayOpen()){const g=OVGUARD;OVPOP=true;closeOverlay();ovWatch();OVGUARD=false;if(g)return}
+  const st=e.state&&e.state.vb?e.state:{step:0,page:null};NAVPOP=true;
+  try{if(st.page){if(S.page!==st.page)openPage(st.page)}else{const t=st.step>=1&&!S.boardId?0:(st.step||0);if(t!==S.step||S.page)go(t);
+    if(t===1&&st.tab&&S.tab!==st.tab){S.tab=st.tab;S.sheetMin=false;renderTools()}}}finally{NAVPOP=false}});
 const opt=(k,v,l,x="")=>`<button class="opt" data-k="${k}" data-v="${v}" aria-pressed="${S[k]===v}" ${x}>${l}</button>`;
 const fmtIcon=ar=>{const w=40*Math.sqrt(ar),h=40/Math.sqrt(ar);const k=Math.min(1,46/w,46/h);return`<span class="ic"><i style="width:${w*k}px;height:${h*k}px"></i></span>`};
 function openPage(p){if(S.tourI!=null)endTour();document.getElementById("layer").innerHTML="";closeMenu();if(p==="home"){go(0);return}if(p==="atelier"){if(S.boardId){go(1)}else{go(0);openProjects()}return}if(p==="new"){go(0);openProjects("new");return}if(p==="galerie"&&TPL===null)loadTpls().then(()=>{if(S.page==="galerie")render()});S.page=p;document.body.classList.remove("studioOn");render();window.scrollTo({top:0});navPush()}
