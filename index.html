@@ -2732,8 +2732,8 @@ function askReceive(d){const B=d.boards.slice(0,10).map(b=>safeBoard(b));const P
     <div class="popF"><button class="btn small ghost" data-popx>Non merci</button><button class="btn go" id="rcvOk">Recevoir ✦</button></div>`;c.querySelectorAll(".board").forEach(fitK);
     c.querySelector("#rcvOk").onclick=async()=>{const bt=c.querySelector("#rcvOk");bt.disabled=true;bt.textContent="Enregistrement…";let first=null;
       try{for(const [pid,data] of Object.entries(P)){if(!/^p[0-9a-z]{1,24}$/.test(pid)||typeof data!=="string"||!DATA_RE.test(data))continue;if(typeof Hd[pid]==="string"&&CLD_RE.test(Hd[pid]))HD[pid]=Hd[pid];await store.putPhoto(pid,data)}
-        for(const b0 of B){const b={...b0,id:S.saved.some(x=>x.id===b0.id)?newBoardId():b0.id||newBoardId(),draft:false,updatedAt:Date.now()};await store.save(b);S.saved=[b,...S.saved.filter(x=>x.id!==b.id)];first=first||b}
-        closePop();if(first)openBoard(first)}catch(e){bt.disabled=false;bt.textContent="Réessayer";const m=c.querySelector(".pophint");if(m)m.textContent="Ça n'a pas marché"+(String(e&&e.message).includes("plein")?" : la mémoire de ce navigateur est pleine.":". Réessaie dans un instant.")}}},{center:true})}
+        for(const b0 of B){const id0=typeof b0.id==="string"&&/^[A-Za-z0-9_-]{1,64}$/.test(b0.id)?b0.id:"";const b={...b0,kind:"board",id:!id0||S.saved.some(x=>x.id===id0)?newBoardId():id0,draft:false,updatedAt:Date.now()};await store.save(b);S.saved=[b,...S.saved.filter(x=>x.id!==b.id)];first=first||b}
+        closePop();if(first)openBoard(first)}catch(e){console.error("recevoir",e);bt.disabled=false;bt.textContent="Réessayer";const m=c.querySelector(".pophint");if(m)m.textContent="Ça n'a pas marché"+(String(e&&e.message).includes("plein")?" : la mémoire de ce navigateur est pleine.":". Réessaie dans un instant.")}}},{center:true})}
 /* toucher à côté du tableau = tout désélectionner */
 (function(){let sx=0,sy=0;document.addEventListener("pointerdown",e=>{sx=e.clientX;sy=e.clientY},true);
  document.addEventListener("pointerup",e=>{if(S.step!==1||!(S.sel||S.crop||S.reframe||S.notice))return;if(Math.hypot(e.clientX-sx,e.clientY-sy)>8)return;
