@@ -839,6 +839,12 @@ html.dark .lgSeg{background:rgba(221,176,107,.07);box-shadow:none}
 html.dark .lgThumb{background:linear-gradient(180deg,rgba(221,176,107,.26) 0%,rgba(221,176,107,.12) 100%);border-color:rgba(221,176,107,.5);
   box-shadow:inset 0 1px 0 rgba(255,236,200,.22),0 3px 10px rgba(0,0,0,.35)}
 html.dark .lgThumb::after{background:linear-gradient(90deg,rgba(255,236,200,0),rgba(255,236,200,.5),rgba(255,236,200,0))}
+
+/* bouton flottant de l'accueil : ancré sur la hauteur « barres du navigateur visibles » (100svh) → il ne bouge plus quand
+   la barre du navigateur apparaît ou disparaît sous le doigt (il « esquivait » le toucher) */
+@supports (height:100svh){.fab{bottom:auto;top:calc(100svh - 70px - env(safe-area-inset-bottom,0px))}}
+.fab{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.fab:active{filter:brightness(.97)}
 </style>
 </head>
 <body><div style="position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:200;background:#B7772F;color:#fff;font:600 11px/1 Poppins,system-ui,sans-serif;padding:4px 10px;border-radius:99px;pointer-events:none;letter-spacing:.08em;opacity:.9">VERSION D'ESSAI</div>
@@ -1799,12 +1805,20 @@ function sheetBoardH(v){const host=document.getElementById("boardHost");const w=
 function boardTop(){const h=document.getElementById("boardHost");const t=h?Math.round(h.getBoundingClientRect().top):150;document.body.style.setProperty("--bt",t+"px");return t}
 /* le tableau suit le panneau en direct : mise à l'échelle depuis le haut (fluide), remplacée par la vraie taille à l'arrêt */
 function sheetBoardScale(base,v,trans){const host=document.getElementById("boardHost");if(!host||!base)return;host.style.transformOrigin="50% 0";host.style.transition=trans||"none";host.style.transform=`scale(${Math.max(0,sheetBoardH(v)/base)})`}
-function sheetFinish(T,name,h){T.style.transition="";T.style.transform="";T.style.height="";document.body.classList.remove("sheetDrag");{const host=document.getElementById("boardHost");if(host){host.style.transition="";host.style.transform=""}}
-  if(name==="min"){S.sheetMin=true;S.sheetH=null}else{S.sheetMin=false;S.sheetH=name==="mid"?null:h}S.sheetAuto=false;renderTools();requestAnimationFrame(applyView)}
+/* fin du geste : on applique la position finale en une seule image (sans reconstruire le panneau ni recharger les vignettes) */
+function sheetApply(T){T.classList.toggle("min",!!S.sheetMin);document.body.classList.toggle("sheetMinB",!!S.sheetMin);
+  if(S.sheetMin)document.body.style.setProperty("--sheetH",Math.round(T.getBoundingClientRect().height)+"px");else if(S.sheetH)document.body.style.setProperty("--sheetH",S.sheetH+"px");else document.body.style.removeProperty("--sheetH");
+  const b=T.querySelector("#sheetT");if(b){b.textContent=S.sheetMin?"▴":"▾";b.setAttribute("aria-label",S.sheetMin?"Ouvrir le panneau":"Réduire le panneau")}}
+function sheetFinish(T,name,h){if(name==="min"){S.sheetMin=true;S.sheetH=null}else{S.sheetMin=false;S.sheetH=name==="mid"?null:h}S.sheetAuto=false;
+  T.style.transition="";T.style.transform="";T.style.height="";document.body.classList.remove("sheetDrag");{const host=document.getElementById("boardHost");if(host){host.style.transition="";host.style.transform=""}}
+  sheetApply(T);applyView()}
+/* animation de calage : douce et un peu plus longue ; la fin n'est détectée que sur le panneau lui-même (pas sur un bouton à l'intérieur) */
+const SHEET_EASE="cubic-bezier(.16,1,.3,1)";
+function sheetEnd(T,dur,fn){let done=false;const end=()=>{if(done)return;done=true;T.removeEventListener("transitionend",te);fn()};const te=ev=>{if(ev.target===T&&ev.propertyName==="transform")end()};T.addEventListener("transitionend",te);setTimeout(end,dur*1000+120)}
 function sheetAnimTo(T,name){const D=sheetDetents(T);const cur=T.getBoundingClientRect().height,top=D.full;const base=sheetBoardH(cur);T.classList.remove("min");document.body.classList.add("sheetDrag");
   T.style.transition="none";T.style.height=top+"px";T.style.transform=`translateY(${top-cur}px)`;void T.offsetHeight;
-  const tgt=D[name];T.style.transition="transform .38s cubic-bezier(.22,1,.36,1)";T.style.transform=`translateY(${top-tgt}px)`;sheetBoardScale(base,tgt,"transform .38s cubic-bezier(.22,1,.36,1)");
-  let done=false;const end=()=>{if(done)return;done=true;sheetFinish(T,name,tgt)};T.addEventListener("transitionend",end,{once:true});setTimeout(end,450)}
+  const tgt=D[name];const tr=`transform .46s ${SHEET_EASE}`;T.style.transition=tr;T.style.transform=`translateY(${top-tgt}px)`;sheetBoardScale(base,tgt,tr);
+  sheetEnd(T,.46,()=>sheetFinish(T,name,tgt))}
 function sheetDrag(T,e,fromTabs){if(!matchMedia("(max-width:900px)").matches)return;const D=sheetDetents(T);const y0=e.clientY,x0=e.clientX,cur=T.getBoundingClientRect().height,top=D.full;const base=sheetBoardH(cur);
   let active=false,raf=0,y=top-cur,last=[{t:performance.now(),y:e.clientY}];const tgtEl=e.currentTarget;
   const start=()=>{active=true;T.classList.remove("min");document.body.classList.add("sheetDrag");T.style.transition="none";T.style.height=top+"px";T.style.transform=`translateY(${top-cur}px)`;try{tgtEl.setPointerCapture(e.pointerId)}catch(x){}};
@@ -1821,8 +1835,8 @@ function sheetDrag(T,e,fromTabs){if(!matchMedia("(max-width:900px)").matches)ret
     const O=["min","mid","max","full"];const near=h=>O.reduce((m,n)=>Math.abs(D[n]-h)<Math.abs(D[m]-h)?n:m,"mid");let name=near(proj);
     /* un coup rapide ne fait avancer que d'un cran (comme sur iPhone), sauf si le doigt est déjà allé plus loin */
     const si=O.indexOf(near(cur)),ni=O.indexOf(name),vi=O.indexOf(near(vis));if(Math.abs(ni-si)>1&&Math.abs(vi-si)<=1)name=O[si+Math.sign(ni-si)];
-    const tgt=D[name];const tr=`transform ${Math.max(.22,Math.min(.42,Math.abs(tgt-vis)/1400+.2))}s cubic-bezier(.22,1,.36,1)`;T.style.transition=tr;T.style.transform=`translateY(${top-tgt}px)`;sheetBoardScale(base,tgt,tr);
-    let done=false;const end=()=>{if(done)return;done=true;sheetFinish(T,name,tgt)};T.addEventListener("transitionend",end,{once:true});setTimeout(end,500)};
+    const tgt=D[name];const dur=+Math.max(.32,Math.min(.52,Math.abs(tgt-vis)/1100+.3-Math.min(.1,Math.abs(vel)*.05))).toFixed(2);const tr=`transform ${dur}s ${SHEET_EASE}`;T.style.transition=tr;T.style.transform=`translateY(${top-tgt}px)`;sheetBoardScale(base,tgt,tr);
+    sheetEnd(T,dur,()=>sheetFinish(T,name,tgt))};
   document.addEventListener("pointermove",mv,{passive:false});document.addEventListener("pointerup",up);document.addEventListener("pointercancel",up)}
 const DORD=["argent","voiture","nouvelles","business","succes","confiance","love","famille","maternite","healthy","sport","beaute","selflove","mode","voyage","maison","terre","foi","etudes","cozy","brunch","celebration","creativite","amitie","details"];
 function renderTools(){
@@ -2206,7 +2220,7 @@ function closePop(){const p=document.getElementById("popOv");if(p){const f=p._on
 function openPop(anchor,draw,o={}){closePop();const d=document.createElement("div");d.id="popOv";d.className="popOv"+(o.center?" center":"")+(o.float?" float":"");d._onClose=o.onClose;d.innerHTML=`<div class="popC" role="dialog" aria-modal="true"></div>`;document.body.appendChild(d);ovSync();const c=d.firstChild;
   const wide=!matchMedia("(max-width:900px)").matches&&anchor;if(wide)d.classList.add("anch");draw(c);
   if(wide){const r=anchor.getBoundingClientRect(),w=c.offsetWidth;const mid=r.left+r.width/2;c.style.left=Math.round(Math.min(innerWidth-w-12,Math.max(12,mid>innerWidth/2?r.right-w:r.left)))+"px";c.style.top=Math.round(r.bottom+8)+"px"}
-  d.addEventListener("click",e=>{if(e.target===d||e.target.closest("[data-popx]"))closePop()})}
+  const t0=Date.now();d.addEventListener("click",e=>{if(e.target===d&&Date.now()-t0<400)return;if(e.target===d||e.target.closest("[data-popx]"))closePop()})}
 const popHead=(t,x="")=>`<div class="popH"><strong>${t}</strong>${x}<span class="popSp"></span><button class="btn small ghost" data-popx aria-label="Fermer">✕</button></div>`;
 function openSettings(btn){openPop(btn,c=>{
   const sl=saveLabel();c.innerHTML=`${popHead(ICO.gear+" Réglages",`<span class="savest${sl.includes("✓")?" ok":""}" id="savest">${esc(sl)}</span>`)}
@@ -2413,7 +2427,8 @@ function render(){
   V.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>pickCat(b.dataset.cat));V.querySelectorAll("[data-or]").forEach(b=>b.onclick=()=>{S.orient=b.dataset.or;const L=Object.keys(FORMATS).filter(k=>supOk(curCat(),k)&&orientOf(k)===S.orient).sort((x,y)=>FORDER.indexOf(x)-FORDER.indexOf(y));const pick=L.find(k=>/^a3/.test(k))||L[0];if(pick&&orientOf(S.format)!==S.orient){if(S.boardId)setFormat(pick);else{S.format=pick;S.offer="tableau";ensureSup()}}scheduleSave();render()});V.querySelectorAll(".fmt,.fmt2").forEach(b=>b.onclick=()=>{if(S.boardId)setFormat(b.dataset.fm);else{S.format=b.dataset.fm;S.offer=FORMATS[S.format].dig?"digital":"tableau";ensureSup();if(isSmall()&&S.model==="vedette")S.model="scrap";render()}});
   V.querySelectorAll(".opt[data-k]").forEach(b=>b.onclick=()=>{S[b.dataset.k]=b.dataset.v;if(b.dataset.k==="age")S.ageView=null;if(b.dataset.k==="teint"||b.dataset.k==="sexe"||b.dataset.k==="age"){if(S.boardId)snap();S.els.forEach(e=>{if(e.type==="photo"&&!e.src.startsWith("data:")&&!fits(DATA.find(d=>d.f===e.src))){e.type="slot";delete e.src}});scheduleSave()}render()});
   const on=(sel,fn)=>{const x=V.querySelector(sel);if(x)x.onclick=fn};
-  on("#next",()=>go(1));on("#newb",newBoard);on("#fab",()=>openProjects());
+  on("#next",()=>go(1));on("#newb",newBoard);{const fb=V.querySelector("#fab");if(fb){let st=0;fb.addEventListener("pointerdown",e=>{st=Date.now();try{fb.setPointerCapture(e.pointerId)}catch(x){}});
+    fb.addEventListener("pointerup",e=>{if(st&&Date.now()-st<900){st=0;e.preventDefault();openProjects()}st=0});fb.addEventListener("pointercancel",()=>st=0);fb.onclick=e=>{if(e.detail===0)openProjects()}}}
   V.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openBoard(S.saved.find(x=>x.id===b.dataset.open)));
   {const rb=V.querySelector("#rbGo");if(rb)rb.onclick=()=>{const t=V.querySelector("#rbTxt").value;const m=t.match(/Code tableau\s*:\s*([A-Z0-9]+)/i);const code=m?m[1].toUpperCase():(t.trim().match(/^[A-Z0-9]{6,}$/i)||[""])[0].toUpperCase();
     const M=code?(ADM.list||[]).filter(x=>String(x.boardId||"").toUpperCase()===code):[];const o=M[0];if(o){adminOpen(o.id);if(M.length>1)S.notice=M.length+" commandes ont ce code : la plus récente est ouverte. Vérifie le nom et le téléphone de la cliente.";renderSelbar();return}
